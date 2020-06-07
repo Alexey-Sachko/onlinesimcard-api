@@ -8,9 +8,9 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UsersController {
@@ -21,6 +21,7 @@ export class UsersController {
     return this.usersService.createUser(userSignupDto);
   }
 
+  @UseGuards(AuthGuard())
   @Post('/testemail')
   async testSendEmail(@Body('to') to: string, @Body('token') token: string) {
     return this.usersService.testSendEmail(to, token);
