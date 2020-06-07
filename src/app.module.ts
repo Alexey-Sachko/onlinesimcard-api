@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
+import { VerifyToken } from './users/verify-token.entity';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { User } from './users/user.entity';
       username: 'alexey',
       password: 'example',
       database: 'onlinesimcard',
-      entities: [User],
+      entities: [User, VerifyToken],
       synchronize: true,
     }),
   ],
