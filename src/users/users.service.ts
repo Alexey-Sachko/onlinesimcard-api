@@ -10,9 +10,9 @@ import * as bcrypt from 'bcrypt';
 import * as cryptoRandomString from 'crypto-random-string';
 import { User } from './user.entity';
 import { UserSignupDto } from './dto/user-signup.dto';
-import { UserSigninDto } from './dto/uses-signin.dto';
 import { EmailClient } from '../common/email.client';
 import { VerifyToken } from './verify-token.entity';
+import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,6 +28,10 @@ export class UsersService {
 
     private emailClient: EmailClient,
   ) {}
+
+  async getUserByEmail(email: string) {
+    return this.usersRepository.findOne({ email });
+  }
 
   async createUser(userSignupDto: UserSignupDto) {
     const { email, password } = userSignupDto;
@@ -77,8 +81,8 @@ export class UsersService {
     }
   }
 
-  async validatePassword(userSigninDto: UserSigninDto) {
-    const { email, password } = userSigninDto;
+  async validatePassword(authCredentialsDto: AuthCredentialsDto) {
+    const { email, password } = authCredentialsDto;
     const user = await this.usersRepository.findOne({ email });
     if (user && (await user.validatePassword(password))) {
       return user.email;

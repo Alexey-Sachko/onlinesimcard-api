@@ -10,5 +10,6 @@ import { VerifyToken } from './verify-token.entity';
   imports: [TypeOrmModule.forFeature([User, VerifyToken])],
   controllers: [UsersController],
   providers: [UsersService, EmailClient],
+  exports: [UsersService],
 })
 export class UsersModule {}

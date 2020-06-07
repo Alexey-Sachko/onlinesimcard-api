@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
 import { VerifyToken } from './users/verify-token.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { VerifyToken } from './users/verify-token.entity';
       entities: [User, VerifyToken],
       synchronize: true,
     }),
+    AuthModule,
   ],
   controllers: [],
   providers: [],
