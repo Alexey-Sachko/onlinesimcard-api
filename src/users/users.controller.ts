@@ -6,9 +6,11 @@ import {
   Get,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UsersController {
@@ -29,7 +31,8 @@ export class UsersController {
     return this.usersService.verifyUser(token);
   }
 
-  @Delete('/:id') // TODO: add permition only for admin
+  @UseGuards(AuthGuard())
+  @Delete('/:id')
   async deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }
