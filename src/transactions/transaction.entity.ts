@@ -17,7 +17,7 @@ export class Transaction extends BaseEntity {
   amount: number;
 
   @Column({ type: 'double precision' })
-  lastBalance: number;
+  balanceBefore: number;
 
   @CreateDateColumn({
     type: 'timestamp',

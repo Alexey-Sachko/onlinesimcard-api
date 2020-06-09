@@ -29,7 +29,7 @@ export class TransactionsService {
     });
     let lastBalance = 0;
     if (lastTransaction) {
-      lastBalance = lastTransaction.lastBalance + lastTransaction.amount; // TODO вынести
+      lastBalance = lastTransaction.balanceBefore + lastTransaction.amount; // TODO вынести
     }
 
     const { amount } = createTransactionDto;
@@ -42,7 +42,7 @@ export class TransactionsService {
     const transaction = new Transaction();
     transaction.user = user;
     transaction.amount = amount;
-    transaction.lastBalance = lastBalance;
+    transaction.balanceBefore = lastBalance;
 
     await transaction.save();
     delete transaction.user;
