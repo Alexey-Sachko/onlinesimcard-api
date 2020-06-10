@@ -6,6 +6,8 @@ import { VerifyToken } from './users/verify-token.entity';
 import { AuthModule } from './auth/auth.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { Transaction } from './transactions/transaction.entity';
+import { ServicesModule } from './services/services.module';
+import { Service } from './services/service.entity';
 
 @Module({
   imports: [
@@ -17,11 +19,12 @@ import { Transaction } from './transactions/transaction.entity';
       username: 'alexey',
       password: 'example',
       database: 'onlinesimcard',
-      entities: [User, VerifyToken, Transaction],
+      entities: [User, VerifyToken, Transaction, Service],
       synchronize: true,
     }),
     AuthModule,
     TransactionsModule,
+    ServicesModule,
   ],
   controllers: [],
   providers: [],
