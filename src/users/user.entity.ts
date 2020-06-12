@@ -4,9 +4,11 @@ import {
   BaseEntity,
   Entity,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { VerifyToken } from './verify-token.entity';
+import { Role } from './role.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -24,6 +26,15 @@ export class User extends BaseEntity {
 
   @Column()
   verified: boolean;
+
+  @Column()
+  roleId: number;
+
+  @ManyToOne(
+    type => Role,
+    role => role.id,
+  )
+  role: Role;
 
   @OneToMany(
     type => VerifyToken,

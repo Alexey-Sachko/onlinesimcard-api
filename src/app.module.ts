@@ -8,6 +8,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { Transaction } from './transactions/transaction.entity';
 import { ServicesModule } from './services/services.module';
 import { Service } from './services/service.entity';
+import { Role } from './users/role.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { Service } from './services/service.entity';
       username: 'alexey',
       password: 'example',
       database: 'onlinesimcard',
-      entities: [User, VerifyToken, Transaction, Service],
+      entities: [User, VerifyToken, Transaction, Service, Role],
       synchronize: true,
     }),
     AuthModule,

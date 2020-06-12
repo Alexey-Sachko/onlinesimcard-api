@@ -13,6 +13,8 @@ import { UserSignupDto } from './dto/user-signup.dto';
 import { EmailClient } from '../common/email.client';
 import { VerifyToken } from './verify-token.entity';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
+import { Role } from './role.entity';
+import { CreateRoleDto } from './dto/create-role.dto';
 
 @Injectable()
 export class UsersService {
@@ -23,11 +25,22 @@ export class UsersService {
     @InjectRepository(VerifyToken)
     private verifyTokensRepository: Repository<VerifyToken>,
 
+    @InjectRepository(Role)
+    private rolesRepository: Repository<Role>,
+
     @InjectConnection()
     private connection: Connection,
 
     private emailClient: EmailClient,
   ) {}
+
+  async createRole(createRoleDto: CreateRoleDto) {
+    const { name, permissions } = createRoleDto;
+    const role = new Role();
+    role.name = name;
+    role.permissions = permissions;
+    await role.save();
+  }
 
   async getUserByEmail(email: string) {
     return this.usersRepository.findOne({ email });

@@ -11,6 +11,10 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { HasPermissions } from '../auth/permissions.decorator';
+import { Permissions } from './permissions.enum';
 
 @Controller('users')
 export class UsersController {
@@ -36,5 +40,19 @@ export class UsersController {
   @Delete('/:id')
   async deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
+  }
+
+  @HasPermissions(Permissions.RolesWrite)
+  @UseGuards(AuthGuard(), PermissionsGuard)
+  @Post('roles')
+  async getRoles(@Body() createRoleDto: CreateRoleDto) {
+    return this.usersService.createRole(createRoleDto);
+  }
+
+  @HasPermissions(Permissions.RolesWrite)
+  @UseGuards(AuthGuard(), PermissionsGuard)
+  @Post('roles')
+  async createRole(@Body() createRoleDto: CreateRoleDto) {
+    return this.usersService.createRole(createRoleDto);
   }
 }

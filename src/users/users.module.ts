@@ -6,10 +6,11 @@ import { User } from './user.entity';
 import { EmailClient } from '../common/email.client';
 import { VerifyToken } from './verify-token.entity';
 import { AuthModule } from '../auth/auth.module';
+import { Role } from './role.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, VerifyToken]),
+    TypeOrmModule.forFeature([User, VerifyToken, Role]),
     forwardRef(() => AuthModule),
   ],
   controllers: [UsersController],
