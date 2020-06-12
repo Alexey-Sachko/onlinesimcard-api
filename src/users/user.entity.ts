@@ -27,7 +27,7 @@ export class User extends BaseEntity {
   @Column()
   verified: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   roleId: number;
 
   @ManyToOne(
