@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import * as dotenv from 'dotenv';
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
@@ -10,6 +11,7 @@ import { Transaction } from './transactions/transaction.entity';
 import { ServicesModule } from './services/services.module';
 import { Service } from './services/service.entity';
 import { Role } from './users/role.entity';
+import { TransformInterceptor } from './common/transform.interceptor';
 
 dotenv.config();
 
@@ -31,6 +33,11 @@ dotenv.config();
     ServicesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+  ],
 })
 export class AppModule {}
