@@ -6,6 +6,7 @@ services:
     environment:
       POSTGRES_USER: alexey
       POSTGRES_PASSWORD: example
+      POSTGRES_DB: onlinesimcard
     volumes:
       - onlinesimcard:/var/lib/postgresql/data
     ports:
