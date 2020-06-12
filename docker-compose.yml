@@ -11,5 +11,11 @@ services:
     ports:
       - '5432:5432'
 
+  api:
+    build: ./
+    image: 23091996/onlinesim_api_klc4f9j40dfk4f8hdfk04fj
+    ports:
+      - '4500:4500'
+
 volumes:
   onlinesimcard:
