@@ -3,11 +3,13 @@ import {
   ConflictException,
   NotFoundException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import * as cryptoRandomString from 'crypto-random-string';
+import * as dotenv from 'dotenv';
 import { User } from './user.entity';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { EmailClient } from '../common/email.client';
@@ -15,9 +17,17 @@ import { VerifyToken } from './verify-token.entity';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { Role } from './role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
+import { Permissions } from './permissions.enum';
 
+dotenv.config();
+
+const ROOT_ADMIN_ROLE = 'root_admin';
+const ROOT_ADMIN_EMAIL = process.env.ROOT_ADMIN_EMAIL;
+const ROOT_ADMIN_PASSWORD = process.env.ROOT_ADMIN_PASSWORD;
 @Injectable()
 export class UsersService {
+  private logger = new Logger('UsersService');
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -30,9 +40,51 @@ export class UsersService {
 
     @InjectConnection()
     private connection: Connection,
-
     private emailClient: EmailClient,
-  ) {}
+  ) {
+    this.initRootUser();
+  }
+
+  private async initRootUserRole() {
+    const roleExists = await this.rolesRepository.findOne({
+      name: ROOT_ADMIN_ROLE,
+    });
+    if (roleExists) {
+      return roleExists;
+    }
+    const role = new Role();
+    role.permissions = Object.values(Permissions); // Все разрешения для ROOT_ADMIN_ROLE
+    role.name = ROOT_ADMIN_ROLE;
+    await role.save();
+    return role;
+  }
+
+  private async initRootUser() {
+    try {
+      this.logger.verbose('Creating root user');
+      const userExists = await this.usersRepository.findOne({
+        email: ROOT_ADMIN_EMAIL,
+      });
+      if (userExists) {
+        this.logger.verbose('Root user already exists');
+        return;
+      }
+      const role = await this.initRootUserRole();
+      await this.createUser(
+        {
+          email: ROOT_ADMIN_EMAIL,
+          password: ROOT_ADMIN_PASSWORD,
+        },
+        role,
+      );
+      this.logger.verbose('Root user has been created');
+    } catch (error) {
+      this.logger.error(
+        `Failed to create root user\nError name: ${error.name}\nmessage: ${error.message}\ncode: ${error.code}`,
+        error.stack,
+      );
+    }
+  }
 
   async createRole(createRoleDto: CreateRoleDto) {
     const { name, permissions } = createRoleDto;
@@ -46,13 +98,16 @@ export class UsersService {
     return this.usersRepository.findOne({ email });
   }
 
-  async createUser(userSignupDto: UserSignupDto) {
+  async createUser(userSignupDto: UserSignupDto, role?: Role) {
     const { email, password } = userSignupDto;
     const user = new User();
     user.email = email;
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
     user.verified = false;
+    if (role) {
+      user.role = role;
+    }
     try {
       await user.save();
       this.createVerifyToken(user);
