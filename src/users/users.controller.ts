@@ -15,6 +15,8 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { PermissionsGuard } from '../auth/permissions.guard';
 import { HasPermissions } from '../auth/permissions.decorator';
 import { Permissions } from './permissions.enum';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { User } from './user.entity';
 
 @Controller('users')
 export class UsersController {
@@ -54,5 +56,11 @@ export class UsersController {
   @Post('roles')
   async createRole(@Body() createRoleDto: CreateRoleDto) {
     return this.usersService.createRole(createRoleDto);
+  }
+
+  @UseGuards(AuthGuard())
+  @Get('role')
+  async getUserRole(@GetUser() user: User) {
+    return this.usersService.getUserRole(user);
   }
 }
