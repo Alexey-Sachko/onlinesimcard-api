@@ -12,7 +12,6 @@ import { ServicesModule } from './services/services.module';
 import { Service } from './services/service.entity';
 import { Role } from './users/role.entity';
 import { TransformInterceptor } from './common/transform.interceptor';
-import { UiModule } from './ui/ui.module';
 
 dotenv.config();
 
@@ -32,7 +31,6 @@ dotenv.config();
     AuthModule,
     TransactionsModule,
     ServicesModule,
-    UiModule,
   ],
   controllers: [],
   providers: [
