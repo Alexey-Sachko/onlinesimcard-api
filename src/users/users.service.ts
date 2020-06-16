@@ -95,7 +95,7 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string) {
-    return this.usersRepository.findOne({ email });
+    return this.usersRepository.findOne({ email }, { relations: ['role'] });
   }
 
   async createUser(userSignupDto: UserSignupDto, role?: Role) {
@@ -160,6 +160,10 @@ export class UsersService {
 
   async testSendEmail(to: string, token: string) {
     return this.sendVerificationEmail(to, token);
+  }
+
+  async getUserRole(user: User) {
+    return user.role;
   }
 
   private async createVerifyToken(user: User) {

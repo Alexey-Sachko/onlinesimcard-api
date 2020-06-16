@@ -15,7 +15,7 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { PermissionsGuard } from '../auth/permissions.guard';
 import { HasPermissions } from '../auth/permissions.decorator';
 import { Permissions } from './permissions.enum';
-import { GetUser } from 'src/auth/get-user.decorator';
+import { GetUser } from '../auth/get-user.decorator';
 import { User } from './user.entity';
 
 @Controller('users')
