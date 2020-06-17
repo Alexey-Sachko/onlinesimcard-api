@@ -12,12 +12,12 @@ export class AuthService {
   ) {}
 
   async login(authCredentialsDto: AuthCredentialsDto) {
-    const email = await this.usersService.validatePassword(authCredentialsDto);
-    if (!email) {
+    const user = await this.usersService.validatePassword(authCredentialsDto);
+    if (!user) {
       throw new UnauthorizedException('Неправильные логин или пароль');
     }
 
-    const payload: JwtPayload = { email };
+    const payload: JwtPayload = { email: user.email, role: user.role };
     const accessToken = await this.jwtService.signAsync(payload);
     return { accessToken };
   }

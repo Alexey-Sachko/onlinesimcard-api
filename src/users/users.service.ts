@@ -151,9 +151,14 @@ export class UsersService {
 
   async validatePassword(authCredentialsDto: AuthCredentialsDto) {
     const { email, password } = authCredentialsDto;
-    const user = await this.usersRepository.findOne({ email });
+    const user = await this.usersRepository.findOne(
+      {
+        email,
+      },
+      { relations: ['role'] },
+    );
     if (user && (await user.validatePassword(password))) {
-      return user.email;
+      return user;
     }
     return null;
   }
