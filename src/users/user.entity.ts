@@ -6,7 +6,7 @@ import {
   OneToMany,
   ManyToOne,
 } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { VerifyToken } from './verify-token.entity';
 import { Role } from './role.entity';
 

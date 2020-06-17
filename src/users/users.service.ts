@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import * as cryptoRandomString from 'crypto-random-string';
 import * as dotenv from 'dotenv';
 import { User } from './user.entity';
