@@ -6,11 +6,13 @@ import {
   ValidationPipe,
   Delete,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { ServicesService } from './services.service';
 import { SwaggerTags } from 'src/swagger/tags';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags(SwaggerTags.Services)
 @Controller('services')
@@ -22,6 +24,8 @@ export class ServicesController {
     return this.servicesService.getServices();
   }
 
+  // TODO permissions
+  @UseGuards(AuthGuard())
   @Post()
   async createService(
     @Body(ValidationPipe)

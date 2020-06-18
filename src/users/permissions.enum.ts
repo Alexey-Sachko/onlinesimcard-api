@@ -3,4 +3,6 @@ export enum Permissions {
   WriteUsers = 'WriteUsers',
   RolesRead = 'RolesRead',
   RolesWrite = 'RolesWrite',
+  ReadEmail = 'ReadEmail',
+  WriteEmail = 'WriteEmail',
 }

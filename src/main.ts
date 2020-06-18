@@ -9,7 +9,8 @@ async function bootstrap() {
   const options = new DocumentBuilder()
     .setTitle('Onlinesimcard.ru API')
     .setDescription('Описание Rest api для onlinesimcard.ru')
-    .setVersion('1.0');
+    .setVersion('1.0')
+    .addBearerAuth();
 
   Object.values(SwaggerTags).forEach(tag => {
     options.addTag(tag);

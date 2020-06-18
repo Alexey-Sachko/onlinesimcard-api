@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { SwaggerTags } from 'src/swagger/tags';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
@@ -30,7 +30,9 @@ export class UsersController {
     return this.usersService.createUser(userSignupDto);
   }
 
-  @UseGuards(AuthGuard())
+  @ApiBearerAuth()
+  @HasPermissions(Permissions.WriteEmail)
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Post('/testemail')
   async testSendEmail(@Body('to') to: string, @Body('token') token: string) {
     return this.usersService.testSendEmail(to, token);
@@ -41,12 +43,15 @@ export class UsersController {
     return this.usersService.verifyUser(token);
   }
 
-  @UseGuards(AuthGuard())
+  @ApiBearerAuth()
+  @HasPermissions(Permissions.ReadUsers)
+  @UseGuards(AuthGuard(), PermissionsGuard)
   @Delete('/:id')
   async deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }
 
+  @ApiBearerAuth()
   @HasPermissions(Permissions.RolesRead)
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Get('roles')
@@ -54,6 +59,7 @@ export class UsersController {
     return this.usersService.getRoles();
   }
 
+  @ApiBearerAuth()
   @HasPermissions(Permissions.RolesWrite)
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Post('roles')
@@ -61,6 +67,7 @@ export class UsersController {
     return this.usersService.createRole(createRoleDto);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard())
   @Get('role')
   async getUserRole(@GetUser() user: User) {
