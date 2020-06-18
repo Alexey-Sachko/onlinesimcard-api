@@ -7,9 +7,12 @@ import {
   Delete,
   Param,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { ServicesService } from './services.service';
+import { SwaggerTags } from 'src/swagger/tags';
 
+@ApiTags(SwaggerTags.Services)
 @Controller('services')
 export class ServicesController {
   constructor(private servicesService: ServicesService) {}

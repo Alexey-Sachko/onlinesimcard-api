@@ -9,6 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
+import { SwaggerTags } from 'src/swagger/tags';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -18,6 +20,7 @@ import { Permissions } from './permissions.enum';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from './user.entity';
 
+@ApiTags(SwaggerTags.Users)
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
