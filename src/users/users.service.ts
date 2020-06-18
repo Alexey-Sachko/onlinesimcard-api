@@ -86,6 +86,10 @@ export class UsersService {
     }
   }
 
+  async getRoles() {
+    return this.rolesRepository.find();
+  }
+
   async createRole(createRoleDto: CreateRoleDto) {
     const { name, permissions } = createRoleDto;
     const role = new Role();
