@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SwaggerTags } from 'src/swagger/tags';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
@@ -25,11 +25,13 @@ import { User } from './user.entity';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @ApiOperation({ summary: 'Регистрация пользователя' })
   @Post('/signup')
   async signup(@Body(ValidationPipe) userSignupDto: UserSignupDto) {
     return this.usersService.createUser(userSignupDto);
   }
 
+  @ApiOperation({ summary: 'Протестировать отправку email' })
   @ApiBearerAuth()
   @HasPermissions(Permissions.WriteEmail)
   @UseGuards(AuthGuard(), PermissionsGuard)
@@ -38,19 +40,22 @@ export class UsersController {
     return this.usersService.testSendEmail(to, token);
   }
 
+  @ApiOperation({ summary: 'Подтвердить учетную запись' })
   @Get('/verify/:token')
   async verifyUser(@Param('token') token: string) {
     return this.usersService.verifyUser(token);
   }
 
+  @ApiOperation({ summary: 'Удалить пользователя' })
   @ApiBearerAuth()
-  @HasPermissions(Permissions.ReadUsers)
+  @HasPermissions(Permissions.WriteUsers)
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Delete('/:id')
   async deleteUser(@Param('id') id: string) {
     return this.usersService.deleteUser(id);
   }
 
+  @ApiOperation({ summary: 'Получить список ролей' })
   @ApiBearerAuth()
   @HasPermissions(Permissions.RolesRead)
   @UseGuards(AuthGuard(), PermissionsGuard)
@@ -59,6 +64,7 @@ export class UsersController {
     return this.usersService.getRoles();
   }
 
+  @ApiOperation({ summary: 'Создать роль' })
   @ApiBearerAuth()
   @HasPermissions(Permissions.RolesWrite)
   @UseGuards(AuthGuard(), PermissionsGuard)
@@ -67,6 +73,7 @@ export class UsersController {
     return this.usersService.createRole(createRoleDto);
   }
 
+  @ApiOperation({ summary: 'Получить свою роль' })
   @ApiBearerAuth()
   @UseGuards(AuthGuard())
   @Get('role')
