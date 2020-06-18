@@ -1,4 +1,11 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionsService } from './transactions.service';
@@ -17,7 +24,7 @@ export class TransactionsController {
   @UseGuards(AuthGuard())
   @Post()
   async createTransaction(
-    @Body() createTransactionDto: CreateTransactionDto,
+    @Body(ValidationPipe) createTransactionDto: CreateTransactionDto,
     @GetUser() user: User,
   ) {
     return this.transactionsService.createTransaction(

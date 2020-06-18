@@ -44,17 +44,17 @@ export class UsersController {
     return this.usersService.deleteUser(id);
   }
 
-  @HasPermissions(Permissions.RolesWrite)
+  @HasPermissions(Permissions.RolesRead)
   @UseGuards(AuthGuard(), PermissionsGuard)
-  @Post('roles')
-  async getRoles(@Body() createRoleDto: CreateRoleDto) {
-    return this.usersService.createRole(createRoleDto);
+  @Get('roles')
+  async getRoles() {
+    return this.usersService.getRoles();
   }
 
   @HasPermissions(Permissions.RolesWrite)
   @UseGuards(AuthGuard(), PermissionsGuard)
   @Post('roles')
-  async createRole(@Body() createRoleDto: CreateRoleDto) {
+  async createRole(@Body(ValidationPipe) createRoleDto: CreateRoleDto) {
     return this.usersService.createRole(createRoleDto);
   }
 
