@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
-import * as cryptoRandomString from 'crypto-random-string';
-import * as dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
+import cryptoRandomString from 'crypto-random-string';
+import dotenv from 'dotenv';
 import { User } from './user.entity';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { EmailClient } from '../common/email.client';

@@ -10,7 +10,7 @@ import { PassportModule } from '@nestjs/passport';
   imports: [
     TypeOrmModule.forFeature([Service]),
     PassportModule.register({
-      defaultStrategy: 'jwt',
+      defaultStrategy: 'custom',
     }),
   ],
   controllers: [ServicesController],
