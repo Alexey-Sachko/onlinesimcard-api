@@ -18,6 +18,7 @@ import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { Role } from './role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { Permissions } from './permissions.enum';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 dotenv.config();
 
@@ -96,6 +97,16 @@ export class UsersService {
     role.name = name;
     role.permissions = permissions;
     await role.save();
+  }
+
+  async updateRole(updateRoleDto: UpdateRoleDto) {
+    const { id } = updateRoleDto;
+    const found = await this.rolesRepository.findOne({ id });
+    if (!found) {
+      throw new NotFoundException(`Не найдено роли с id '${id}'`);
+    }
+
+    return await this.rolesRepository.save(updateRoleDto);
   }
 
   async getUserByEmail(email: string) {

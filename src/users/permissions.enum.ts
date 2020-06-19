@@ -5,4 +5,5 @@ export enum Permissions {
   RolesWrite = 'RolesWrite',
   ReadEmail = 'ReadEmail',
   WriteEmail = 'WriteEmail',
+  ReadAdminPage = 'ReadAdminPage',
 }

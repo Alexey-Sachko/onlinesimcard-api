@@ -4,9 +4,15 @@ import { ServicesController } from './services.controller';
 import { ServicesService } from './services.service';
 import { Service } from './service.entity';
 import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Service])],
+  imports: [
+    TypeOrmModule.forFeature([Service]),
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+    }),
+  ],
   controllers: [ServicesController],
   providers: [ServicesService, SmsActivateClient],
 })
