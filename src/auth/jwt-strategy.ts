@@ -1,31 +1,38 @@
-import { PassportStrategy } from '@nestjs/passport';
+import { PassportStrategy, AbstractStrategy } from '@nestjs/passport';
 import { UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { Request } from 'express';
 import { ExtractJwt } from 'passport-jwt';
-import { Strategy, VerifiedCallback } from 'passport-custom';
+import { Strategy } from 'passport-strategy';
 import { config } from 'dotenv';
-import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 
 config();
 
 const extractToken = ExtractJwt.fromAuthHeaderAsBearerToken();
 
-export class JwtStrategy extends PassportStrategy(Strategy) {
+const DefaultStrategy = (name: string) =>
+  class DefaultPassportStrategy extends Strategy {
+    name = name;
+  };
+
+export class JwtStrategy extends PassportStrategy(DefaultStrategy('jwt-perm')) {
   constructor(
-    @Inject(forwardRef(() => UsersService))
+    @Inject(forwardRef(() => AuthService))
     private authService: AuthService,
   ) {
-    super((req: Request, done: VerifiedCallback) => {
+    super();
+  }
+
+  async authenticate(req: Request, options: any) {
+    try {
       const token = extractToken(req);
       if (!token) {
-        done(new UnauthorizedException());
-        return;
+        throw new UnauthorizedException();
       }
-      this.authService
-        .validateToken(token)
-        .then(user => done(null, user))
-        .catch(err => done(err));
-    });
+      const user = await this.authService.validateToken(token);
+      this.success(user);
+    } catch (error) {
+      this.error(error);
+    }
   }
 }

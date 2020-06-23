@@ -16,7 +16,7 @@ config();
     forwardRef(() => UsersModule),
     TypeOrmModule.forFeature([PermToken]),
     PassportModule.register({
-      defaultStrategy: 'custom',
+      defaultStrategy: 'jwt-perm',
     }),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
