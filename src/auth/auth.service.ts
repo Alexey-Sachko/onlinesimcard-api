@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -37,6 +41,41 @@ export class AuthService {
   async getOwnPermTokens(user: User) {
     const permTokens = await this.permTokenRepository.find({ userId: user.id });
     return permTokens.map(perm => perm.toResponseObject());
+  }
+
+  async deletePermToken(user: User, tokenId: string) {
+    const rows = await this.permTokenRepository.delete({
+      userId: user.id,
+      id: tokenId,
+    });
+    if (!rows.affected) {
+      throw new NotFoundException(
+        `Не найдено постоянного токена с id '${tokenId}'`,
+      );
+    }
+  }
+
+  async validateToken(tokenString: string): Promise<User | null> {
+    if (tokenString.indexOf(PERM_TOKEN_PREFIX) === 0) {
+      const permToken = await this.permTokenRepository.findOne(
+        { value: tokenString },
+        { relations: ['user'] },
+      );
+      if (!permToken) {
+        throw new UnauthorizedException();
+      }
+      if (permToken.expires_at < new Date()) {
+        throw new UnauthorizedException();
+      }
+      // TODO extract
+      return permToken.user;
+    }
+
+    const { email }: JwtPayload = await this.jwtService.verifyAsync(
+      tokenString,
+    );
+    const user = await this.usersService.getUserByEmail(email);
+    return user;
   }
 
   async login(authCredentialsDto: AuthCredentialsDto) {

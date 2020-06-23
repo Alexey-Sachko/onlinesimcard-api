@@ -5,6 +5,8 @@ import {
   ValidationPipe,
   UseGuards,
   Get,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -43,5 +45,13 @@ export class AuthController {
     @Body(ValidationPipe) createPermTokenDto: CreatePermTokenDto,
   ) {
     return this.authService.createPermToken(user, createPermTokenDto);
+  }
+
+  @ApiOperation({ summary: 'Удалить персональный постоянный токен' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard())
+  @Delete('/permtokens/:id')
+  async deletePermToken(@GetUser() user: User, @Param('id') id: string) {
+    return this.authService.deletePermToken(user, id);
   }
 }
