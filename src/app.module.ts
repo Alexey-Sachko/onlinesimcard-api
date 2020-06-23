@@ -12,6 +12,7 @@ import { ServicesModule } from './services/services.module';
 import { Service } from './services/service.entity';
 import { Role } from './users/role.entity';
 import { TransformInterceptor } from './common/transform.interceptor';
+import { PermToken } from './auth/perm-token.entity';
 
 dotenv.config();
 
@@ -25,7 +26,7 @@ dotenv.config();
       username: process.env.TYPEORM_USERNAME,
       password: process.env.TYPEORM_PASSWORD,
       database: process.env.TYPEORM_DATABASE,
-      entities: [User, VerifyToken, Transaction, Service, Role],
+      entities: [User, VerifyToken, Transaction, Service, Role, PermToken],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),
     AuthModule,
