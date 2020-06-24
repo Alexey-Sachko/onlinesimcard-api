@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -19,6 +20,7 @@ import { HasPermissions } from '../auth/permissions.decorator';
 import { Permissions } from './permissions.enum';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from './user.entity';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 @ApiTags(SwaggerTags.Users)
 @Controller('users')
@@ -71,6 +73,15 @@ export class UsersController {
   @Post('roles')
   async createRole(@Body(ValidationPipe) createRoleDto: CreateRoleDto) {
     return this.usersService.createRole(createRoleDto);
+  }
+
+  @ApiOperation({ summary: 'Обновить роль' })
+  @ApiBearerAuth()
+  @HasPermissions(Permissions.RolesWrite)
+  @UseGuards(AuthGuard(), PermissionsGuard)
+  @Put('roles')
+  async updateRole(@Body(ValidationPipe) updateRoleDto: UpdateRoleDto) {
+    return this.usersService.updateRole(updateRoleDto);
   }
 
   @ApiOperation({ summary: 'Получить свою роль' })

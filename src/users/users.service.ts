@@ -7,9 +7,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository, InjectConnection } from '@nestjs/typeorm';
 import { Repository, Connection } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
-import * as cryptoRandomString from 'crypto-random-string';
-import * as dotenv from 'dotenv';
+import bcrypt from 'bcryptjs';
+import cryptoRandomString from 'crypto-random-string';
+import dotenv from 'dotenv';
 import { User } from './user.entity';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { EmailClient } from '../common/email.client';
@@ -18,6 +18,7 @@ import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { Role } from './role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { Permissions } from './permissions.enum';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 dotenv.config();
 
@@ -96,6 +97,16 @@ export class UsersService {
     role.name = name;
     role.permissions = permissions;
     await role.save();
+  }
+
+  async updateRole(updateRoleDto: UpdateRoleDto) {
+    const { id } = updateRoleDto;
+    const found = await this.rolesRepository.findOne({ id });
+    if (!found) {
+      throw new NotFoundException(`Не найдено роли с id '${id}'`);
+    }
+
+    return await this.rolesRepository.save(updateRoleDto);
   }
 
   async getUserByEmail(email: string) {

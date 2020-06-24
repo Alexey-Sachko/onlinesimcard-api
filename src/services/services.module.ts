@@ -10,7 +10,7 @@ import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient
   imports: [
     TypeOrmModule.forFeature([Service]),
     PassportModule.register({
-      defaultStrategy: 'jwt',
+      defaultStrategy: 'jwt-perm',
     }),
   ],
   controllers: [ServicesController],
