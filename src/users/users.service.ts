@@ -198,7 +198,7 @@ export class UsersService {
   }
 
   private async sendVerificationEmail(to: string, token: string) {
-    const link = `http://localhost:4500/users/verify/${token}`;
+    const link = `${process.env.VERIFICATION_EMAIL_BASE_URL}/${token}`;
     return this.emailClient.sendEmail({
       to,
       from: {
