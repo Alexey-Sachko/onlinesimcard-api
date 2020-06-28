@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import * as dotenv from 'dotenv';
@@ -13,6 +14,7 @@ import { Service } from './services/service.entity';
 import { Role } from './users/role.entity';
 import { TransformInterceptor } from './common/transform.interceptor';
 import { PermToken } from './auth/perm-token.entity';
+import { FreeModule } from './free/free.module';
 
 dotenv.config();
 
@@ -29,9 +31,13 @@ dotenv.config();
       entities: [User, VerifyToken, Transaction, Service, Role, PermToken],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),
+    GraphQLModule.forRoot({
+      autoSchemaFile: true,
+    }),
     AuthModule,
     TransactionsModule,
     ServicesModule,
+    FreeModule,
   ],
   controllers: [],
   providers: [
