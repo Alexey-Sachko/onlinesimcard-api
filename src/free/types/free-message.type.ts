@@ -1,6 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 
-@ObjectType('FreeMessage')
+@ObjectType()
 export class FreeMessageType {
   @Field()
   text: string;

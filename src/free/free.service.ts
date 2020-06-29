@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import Axios from 'axios';
 import { FreeNumType } from './types/free-num.type';
 import { FreeCountryType } from './types/free-country.type';
-import { FreeMessageType } from './types/free-message.type';
+import { FreeMessagesType } from './types/free-messages.type';
 
 const ONLINESIM = 'https://onlinesim.ru/api';
 
@@ -19,16 +19,19 @@ export class FreeService {
 
   async getCountries(): Promise<FreeCountryType[]> {
     const res = await Axios.get(`${ONLINESIM}/getFreeCountryList`);
-    console.log(res.data);
     return res.data.countries;
   }
 
-  async getMessagesByNumber(num: number): Promise<FreeMessageType[]> {
+  async getMessagesByNumber(
+    num: string,
+    page?: number,
+  ): Promise<FreeMessagesType> {
     const res = await Axios.get(`${ONLINESIM}/getFreeMessageList`, {
       params: {
         phone: num,
+        page,
       },
     });
-    return res.data.numbers;
+    return res.data.messages;
   }
 }
