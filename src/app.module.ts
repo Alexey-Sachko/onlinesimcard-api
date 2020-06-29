@@ -33,6 +33,7 @@ dotenv.config();
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      path: 'api/v1/graphql',
     }),
     AuthModule,
     TransactionsModule,
