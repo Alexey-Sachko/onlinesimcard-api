@@ -15,6 +15,8 @@ import { Role } from './users/role.entity';
 import { TransformInterceptor } from './common/transform.interceptor';
 import { PermToken } from './auth/perm-token.entity';
 import { FreeModule } from './free/free.module';
+import { ArticlesModule } from './articles/articles.module';
+import { ArticleORM } from './articles/article.entity';
 
 dotenv.config();
 
@@ -28,7 +30,15 @@ dotenv.config();
       username: process.env.TYPEORM_USERNAME,
       password: process.env.TYPEORM_PASSWORD,
       database: process.env.TYPEORM_DATABASE,
-      entities: [User, VerifyToken, Transaction, Service, Role, PermToken],
+      entities: [
+        User,
+        VerifyToken,
+        Transaction,
+        Service,
+        Role,
+        PermToken,
+        ArticleORM,
+      ],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),
     GraphQLModule.forRoot({
@@ -39,6 +49,7 @@ dotenv.config();
     TransactionsModule,
     ServicesModule,
     FreeModule,
+    ArticlesModule,
   ],
   controllers: [],
   providers: [
