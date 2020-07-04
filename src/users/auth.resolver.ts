@@ -13,15 +13,9 @@ import { AuthResponseType } from './types/auth-response.type';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { GqlAuthGuard } from './gql-auth.guard';
 
-@Resolver(of => AuthResponseType)
+@Resolver('Auth')
 export class AuthResolver {
   constructor(private readonly _authService: AuthService) {}
-
-  @UseGuards(GqlAuthGuard)
-  @Query(returns => Boolean)
-  async something() {
-    return false;
-  }
 
   @Mutation(returns => AuthResponseType)
   async login(

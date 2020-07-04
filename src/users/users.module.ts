@@ -10,6 +10,7 @@ import { Role } from './role.entity';
 import { AuthService } from './auth.service';
 import { PermToken } from './perm-token.entity';
 import { PassportModule } from '@nestjs/passport';
+import { AuthResolver } from './auth.resolver';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { PassportModule } from '@nestjs/passport';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, EmailClient, AuthService],
-  exports: [UsersService],
+  providers: [UsersService, EmailClient, AuthService, AuthResolver],
+  exports: [UsersService, JwtModule],
 })
 export class UsersModule {}
