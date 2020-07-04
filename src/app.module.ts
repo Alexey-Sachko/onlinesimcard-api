@@ -6,17 +6,16 @@ import * as dotenv from 'dotenv';
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
 import { VerifyToken } from './users/verify-token.entity';
-import { AuthModule } from './auth/auth.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { Transaction } from './transactions/transaction.entity';
 import { ServicesModule } from './services/services.module';
 import { Service } from './services/service.entity';
 import { Role } from './users/role.entity';
 import { TransformInterceptor } from './common/transform.interceptor';
-import { PermToken } from './auth/perm-token.entity';
 import { FreeModule } from './free/free.module';
 import { ArticlesModule } from './articles/articles.module';
 import { ArticleORM } from './articles/article.entity';
+import { PermToken } from './users/perm-token.entity';
 
 dotenv.config();
 
@@ -46,7 +45,6 @@ dotenv.config();
       path: 'api/v1/graphql',
       context: ({ req, res }) => ({ req, res }),
     }),
-    AuthModule,
     TransactionsModule,
     ServicesModule,
     FreeModule,

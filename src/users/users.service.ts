@@ -14,7 +14,7 @@ import { User } from './user.entity';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { EmailClient } from '../common/email.client';
 import { VerifyToken } from './verify-token.entity';
-import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
+import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { Role } from './role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { Permissions } from './permissions.enum';

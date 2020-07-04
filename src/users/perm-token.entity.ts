@@ -6,10 +6,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import moment from 'moment';
-import { v1 as uuidV1 } from 'uuid';
-import * as bcrypt from 'bcryptjs';
 import { User } from '../users/user.entity';
-import { PERM_TOKEN_PREFIX } from './constants';
 
 @Entity()
 export class PermToken extends BaseEntity {

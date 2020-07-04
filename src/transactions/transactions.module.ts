@@ -3,10 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
 import { Transaction } from './transaction.entity';
-import { AuthModule } from '../auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Transaction]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([Transaction]),
+    PassportModule.register({
+      defaultStrategy: 'jwt-perm',
+    }),
+  ],
   controllers: [TransactionsController],
   providers: [TransactionsService],
 })

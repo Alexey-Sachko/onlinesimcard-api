@@ -11,8 +11,9 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SwaggerTags } from 'src/swagger/tags';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { TransactionsService } from './transactions.service';
-import { GetUser } from '../auth/get-user.decorator';
+
 import { User } from '../users/user.entity';
+import { GetUser } from 'src/users/get-user.decorator';
 
 @ApiTags(SwaggerTags.Transactions)
 @ApiBearerAuth()
