@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt-strategy';
 import { UsersModule } from '../users/users.module';
 import { PermToken } from './perm-token.entity';
+import { AuthResolver } from './auth.resolver';
 
 config();
 
@@ -26,7 +27,7 @@ config();
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, AuthResolver],
   exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}
