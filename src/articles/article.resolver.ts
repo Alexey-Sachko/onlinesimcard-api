@@ -1,10 +1,12 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { UseGuards, ParseIntPipe } from '@nestjs/common';
 import { ArticleType } from './types/article.type';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { UseGuards, ParseIntPipe } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
+import { ErrorResponse } from 'src/common/error-response';
+import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Resolver(of => ArticleType)
 export class ArticleResolver {
@@ -20,14 +22,26 @@ export class ArticleResolver {
     return this._articlesService.getArticlesCount();
   }
 
-  @Query(returns => ArticleType)
+  @Query(returns => ArticleType, { nullable: true })
   article(@Args('id', ParseIntPipe) id: number) {
     return this._articlesService.getArticleById(id);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
-  @Mutation(returns => ArticleType)
+  @Mutation(returns => [ErrorResponse], { nullable: true })
   createArticle(@Args('createArticleDto') createArticleDto: CreateArticleDto) {
     return this._articlesService.createArticle(createArticleDto);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
+  @Mutation(returns => [ErrorResponse], { nullable: true })
+  updateArticle(@Args('updateArticleDto') updateArticleDto: UpdateArticleDto) {
+    return this._articlesService.updateArticle(updateArticleDto);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
+  @Mutation(returns => ErrorResponse, { nullable: true })
+  deleteArticle(@Args('id', ParseIntPipe) id: number) {
+    return this._articlesService.deleteArticle(id);
   }
 }
