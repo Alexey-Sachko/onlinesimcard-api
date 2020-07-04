@@ -4,14 +4,12 @@ import {
   Args,
   Context,
   GraphQLExecutionContext,
-  Query,
 } from '@nestjs/graphql';
-import { ValidationPipe, UseGuards } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthResponseType } from './types/auth-response.type';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { GqlAuthGuard } from './gql-auth.guard';
 
 @Resolver('Auth')
 export class AuthResolver {

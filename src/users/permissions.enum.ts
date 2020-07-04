@@ -6,4 +6,5 @@ export enum Permissions {
   ReadEmail = 'ReadEmail',
   WriteEmail = 'WriteEmail',
   ReadAdminPage = 'ReadAdminPage',
+  WriteArticles = 'WriteArticles',
 }

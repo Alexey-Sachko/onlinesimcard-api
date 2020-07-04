@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleORM } from './article.entity';
 import { Repository } from 'typeorm';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { NotFoundException, ConflictException } from 'src/exceptions';
+import { ConflictException } from 'src/exceptions';
 
 @Injectable()
 export class ArticlesService {
@@ -23,9 +23,7 @@ export class ArticlesService {
       return article;
     } catch (error) {
       if (error.code === '23505') {
-        throw new ConflictException(
-          `Article with alias ${alias} already exists`,
-        );
+        return null;
       }
       throw error;
     }
@@ -36,12 +34,8 @@ export class ArticlesService {
     return articles;
   }
 
-  async getArticleByAlias(alias: string) {
-    const article = await this._articleRepository.findOne({ alias });
-    if (!article) {
-      throw new NotFoundException(`Не найдено article с alias: '${alias}'`);
-    }
-
+  async getArticleById(id: number) {
+    const article = await this._articleRepository.findOne({ id });
     return article;
   }
 

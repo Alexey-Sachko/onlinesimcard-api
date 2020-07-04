@@ -2,8 +2,9 @@ import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { ArticleType } from './types/article.type';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, ParseIntPipe } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
+import { Permissions } from 'src/users/permissions.enum';
 
 @Resolver(of => ArticleType)
 export class ArticleResolver {
@@ -20,11 +21,11 @@ export class ArticleResolver {
   }
 
   @Query(returns => ArticleType)
-  article(@Args('alias') alias: string) {
-    return this._articlesService.getArticleByAlias(alias);
+  article(@Args('id', ParseIntPipe) id: number) {
+    return this._articlesService.getArticleById(id);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
   @Mutation(returns => ArticleType)
   createArticle(@Args('createArticleDto') createArticleDto: CreateArticleDto) {
     return this._articlesService.createArticle(createArticleDto);
