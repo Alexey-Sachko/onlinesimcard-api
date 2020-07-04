@@ -44,6 +44,7 @@ dotenv.config();
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       path: 'api/v1/graphql',
+      context: ({ req, res }) => ({ req, res }),
     }),
     AuthModule,
     TransactionsModule,
