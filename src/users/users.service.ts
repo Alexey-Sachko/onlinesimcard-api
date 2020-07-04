@@ -43,24 +43,35 @@ export class UsersService {
     private connection: Connection,
     private emailClient: EmailClient,
   ) {
-    this.initRootUser();
+    this.initData();
+  }
+
+  private async initData() {
+    const role = await this.initRootUserRole();
+    await this.initRootUser(role);
   }
 
   private async initRootUserRole() {
-    const roleExists = await this.rolesRepository.findOne({
+    this.logger.verbose(`Finding Role: "${ROOT_ADMIN_ROLE}"`);
+    let role = await this.rolesRepository.findOne({
       name: ROOT_ADMIN_ROLE,
     });
-    if (roleExists) {
-      return roleExists;
+    if (!role) {
+      this.logger.verbose(`Role: "${ROOT_ADMIN_ROLE}" does not exist yet`);
+      role = new Role();
+      role.name = ROOT_ADMIN_ROLE;
+    } else {
+      this.logger.verbose(`Role: "${ROOT_ADMIN_ROLE}" already exists`);
     }
-    const role = new Role();
     role.permissions = Object.values(Permissions); // Все разрешения для ROOT_ADMIN_ROLE
-    role.name = ROOT_ADMIN_ROLE;
     await role.save();
+    this.logger.verbose(
+      `Role: "${ROOT_ADMIN_ROLE}" was saved with fresh permissions`,
+    );
     return role;
   }
 
-  private async initRootUser() {
+  private async initRootUser(role: Role) {
     try {
       this.logger.verbose('Creating root user');
       const userExists = await this.usersRepository.findOne({
@@ -70,7 +81,6 @@ export class UsersService {
         this.logger.verbose('Root user already exists');
         return;
       }
-      const role = await this.initRootUserRole();
       await this.createUser(
         {
           email: ROOT_ADMIN_EMAIL,
