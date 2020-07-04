@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleORM } from './article.entity';
 import { Repository } from 'typeorm';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { ConflictException } from 'src/exceptions';
 
 @Injectable()
 export class ArticlesService {
