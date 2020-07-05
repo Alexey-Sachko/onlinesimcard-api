@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
@@ -11,6 +11,7 @@ import { AuthService } from './auth.service';
 import { PermToken } from './perm-token.entity';
 import { PassportModule } from '@nestjs/passport';
 import { AuthResolver } from './auth.resolver';
+import { UserResolver } from './user.resolver';
 
 @Module({
   imports: [
@@ -26,7 +27,13 @@ import { AuthResolver } from './auth.resolver';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, EmailClient, AuthService, AuthResolver],
+  providers: [
+    UsersService,
+    EmailClient,
+    AuthService,
+    AuthResolver,
+    UserResolver,
+  ],
   exports: [UsersService, JwtModule],
 })
 export class UsersModule {}

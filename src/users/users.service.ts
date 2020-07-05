@@ -1,6 +1,5 @@
 import {
   Injectable,
-  ConflictException,
   NotFoundException,
   InternalServerErrorException,
   Logger,
@@ -19,6 +18,8 @@ import { Role } from './role.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { Permissions } from './permissions.enum';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { RegisterPayloadType } from './types/register-payload.type';
+import { createError } from 'src/common/errors/create-error';
 
 dotenv.config();
 
@@ -123,8 +124,23 @@ export class UsersService {
     return this.usersRepository.findOne({ email }, { relations: ['role'] });
   }
 
-  async createUser(userSignupDto: UserSignupDto, role?: Role) {
+  async createUser(
+    userSignupDto: UserSignupDto,
+    role?: Role,
+  ): Promise<RegisterPayloadType> {
     const { email, password } = userSignupDto;
+    const userWithEmailExists = await this.usersRepository.findOne({ email });
+    if (userWithEmailExists) {
+      return {
+        errors: [
+          createError(
+            'email',
+            `Пользователь с email: '${email}' уже сущетвует`,
+          ),
+        ],
+      };
+    }
+
     const user = new User();
     user.email = email;
     user.salt = await bcrypt.genSalt();
@@ -133,17 +149,12 @@ export class UsersService {
     if (role) {
       user.role = role;
     }
-    try {
-      await user.save();
-      this.createVerifyToken(user);
-    } catch (error) {
-      // duplicate username
-      if (error.code === '23505') {
-        throw new ConflictException('User already exists');
-      } else {
-        throw error;
-      }
-    }
+
+    await user.save();
+    await this.createVerifyToken(user);
+    return {
+      result: true,
+    };
   }
 
   async deleteUser(id: string) {

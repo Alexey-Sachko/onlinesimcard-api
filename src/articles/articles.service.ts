@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleORM } from './article.entity';
 import { Repository } from 'typeorm';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { errorResponse } from 'src/common/error-response';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { createError } from 'src/common/errors/create-error';
 
 @Injectable()
 export class ArticlesService {
@@ -21,7 +21,7 @@ export class ArticlesService {
 
     if (articleExists) {
       return [
-        errorResponse('alias', `Статья с alias: '${alias}' уже существует`),
+        createError('alias', `Статья с alias: '${alias}' уже существует`),
       ];
     }
 
@@ -37,12 +37,12 @@ export class ArticlesService {
     const { id, alias } = updateArticleDto;
     const article = await this.getArticleById(id);
     if (!article) {
-      return [errorResponse('id', `Нет статьи с id: '${updateArticleDto.id}'`)];
+      return [createError('id', `Нет статьи с id: '${updateArticleDto.id}'`)];
     }
 
     const articleByAlias = await this._articleRepository.findOne({ alias });
     if (articleByAlias && articleByAlias.id !== article.id) {
-      return [errorResponse('alias', `Поле alias должно быть уникальным`)];
+      return [createError('alias', `Поле alias должно быть уникальным`)];
     }
 
     Object.assign(article, updateArticleDto);
@@ -53,7 +53,7 @@ export class ArticlesService {
   async deleteArticle(id: number) {
     const article = await this.getArticleById(id);
     if (!article) {
-      return errorResponse('id', `Нет статьи с id: '${id}'`);
+      return createError('id', `Нет статьи с id: '${id}'`);
     }
     await this._articleRepository.remove(article);
     return null;

@@ -5,8 +5,8 @@ import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
-import { ErrorResponse } from 'src/common/error-response';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { ErrorType } from 'src/common/errors/error.type';
 
 @Resolver(of => ArticleType)
 export class ArticleResolver {
@@ -28,19 +28,19 @@ export class ArticleResolver {
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
-  @Mutation(returns => [ErrorResponse], { nullable: true })
+  @Mutation(returns => [ErrorType], { nullable: true })
   createArticle(@Args('createArticleDto') createArticleDto: CreateArticleDto) {
     return this._articlesService.createArticle(createArticleDto);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
-  @Mutation(returns => [ErrorResponse], { nullable: true })
+  @Mutation(returns => [ErrorType], { nullable: true })
   updateArticle(@Args('updateArticleDto') updateArticleDto: UpdateArticleDto) {
     return this._articlesService.updateArticle(updateArticleDto);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
-  @Mutation(returns => ErrorResponse, { nullable: true })
+  @Mutation(returns => ErrorType, { nullable: true })
   deleteArticle(@Args('id', ParseIntPipe) id: number) {
     return this._articlesService.deleteArticle(id);
   }
