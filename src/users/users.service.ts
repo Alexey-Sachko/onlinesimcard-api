@@ -20,6 +20,7 @@ import { Permissions } from './permissions.enum';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { RegisterPayloadType } from './types/register-payload.type';
 import { createError } from 'src/common/errors/create-error';
+import { ErrorType } from 'src/common/errors/error.type';
 
 dotenv.config();
 
@@ -157,11 +158,12 @@ export class UsersService {
     };
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string): Promise<ErrorType | null> {
     const rows = await this.usersRepository.delete({ id });
     if (!rows.affected) {
-      throw new NotFoundException(`Не найдено пользователя с id: "${id}"`);
+      return createError('id', `Не найдено пользователя с id: "${id}"`);
     }
+    return null;
   }
 
   async verifyUser(tokenString: string) {
