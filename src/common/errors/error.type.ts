@@ -1,5 +1,4 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { Constraint } from './constraint.type';
 
 @ObjectType()
 export class ErrorType {
@@ -8,7 +7,4 @@ export class ErrorType {
 
   @Field()
   message: string;
-
-  @Field(type => [Constraint], { nullable: true })
-  constraints?: Constraint[];
 }

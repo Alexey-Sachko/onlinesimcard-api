@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { createError } from 'src/common/errors/create-error';
+import { ErrorType } from '../common/errors/error.type';
 
 @Injectable()
 export class ArticlesService {
@@ -13,7 +14,9 @@ export class ArticlesService {
     private readonly _articleRepository: Repository<ArticleORM>,
   ) {}
 
-  async createArticle(createArticleDto: CreateArticleDto) {
+  async createArticle(
+    createArticleDto: CreateArticleDto,
+  ): Promise<ErrorType[] | null> {
     const { alias, text, title } = createArticleDto;
     const articleExists = await this._articleRepository.findOne({
       alias,
@@ -30,7 +33,7 @@ export class ArticlesService {
     article.text = text;
     article.alias = alias;
     await article.save();
-    return article;
+    return null;
   }
 
   async updateArticle(updateArticleDto: UpdateArticleDto) {
