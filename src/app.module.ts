@@ -43,6 +43,10 @@ dotenv.config();
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       path: 'api/v1/graphql',
+      cors: {
+        credentials: true,
+        origin: ['http://localhost:3000'],
+      },
       context: ({ req, res }) => ({ req, res }),
     }),
     TransactionsModule,
