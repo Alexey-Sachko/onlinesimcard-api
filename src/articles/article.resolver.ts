@@ -7,6 +7,7 @@ import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { ErrorType } from 'src/common/errors/error.type';
+import { validate } from '../common/validate';
 
 @Resolver(of => ArticleType)
 export class ArticleResolver {
@@ -29,7 +30,14 @@ export class ArticleResolver {
 
   @UseGuards(GqlAuthGuard(Permissions.WriteArticles))
   @Mutation(returns => [ErrorType], { nullable: true })
-  createArticle(@Args('createArticleDto') createArticleDto: CreateArticleDto) {
+  async createArticle(
+    @Args('createArticleDto') createArticleDto: CreateArticleDto,
+  ) {
+    const errors = await validate(createArticleDto, CreateArticleDto);
+    if (errors) {
+      return errors;
+    }
+
     return this._articlesService.createArticle(createArticleDto);
   }
 
