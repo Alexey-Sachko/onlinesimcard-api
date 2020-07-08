@@ -9,6 +9,7 @@ import { PermToken } from './perm-token.entity';
 import { User } from '../users/user.entity';
 import { PERM_TOKEN_PREFIX } from './constants';
 import { ErrorType } from 'src/common/errors/error.type';
+import { createError } from '../common/errors/create-error';
 
 @Injectable()
 export class AuthService {
@@ -48,12 +49,11 @@ export class AuthService {
   ): Promise<ErrorType[] | string> {
     const user = await this.usersService.validatePassword(authCredentialsDto);
     if (!user) {
-      return [
-        {
-          path: 'email',
-          message: 'Неправильные логин или пароль',
-        },
-      ];
+      return [createError('email', 'Неправильные логин или пароль')];
+    }
+
+    if (!user.verified) {
+      return [createError('$not_verified', 'Подтвердите учетную запись')];
     }
 
     const payload: JwtPayload = { email: user.email, role: user.role };
