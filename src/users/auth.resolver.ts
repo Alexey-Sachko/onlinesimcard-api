@@ -3,7 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthResponseType } from './types/auth-response.type';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
-import { MyGqlContext } from '../../dist/common/my-gql-context.interface';
+import { MyGqlContext } from '../common/my-gql-context';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -16,8 +16,7 @@ export class AuthResolver {
     authCredentialsDto: AuthCredentialsDto,
   ) {
     const data = await this._authService.login(authCredentialsDto);
-    const res = context.res;
-    res.cookie('accessToken', data.accessToken, {
+    context.res.cookie('accessToken', data.accessToken, {
       httpOnly: true,
       maxAge: 1000 * 60 * 15,
       path: '/',
@@ -26,5 +25,8 @@ export class AuthResolver {
   }
 
   @Mutation(returns => Boolean)
-  async logout(@Context() context: MyGqlContext) {}
+  async logout(@Context() context: MyGqlContext) {
+    context.res.clearCookie('accessToken');
+    return true;
+  }
 }
