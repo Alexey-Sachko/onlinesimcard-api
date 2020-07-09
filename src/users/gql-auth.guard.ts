@@ -2,16 +2,17 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  UnauthorizedException,
   mixin,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { AuthenticationError, ApolloError } from 'apollo-server-express';
 import { JwtPayload } from './jwt-payload.type';
 import { UsersService } from 'src/users/users.service';
 import { Permissions } from './permissions.enum';
 import { User } from './user.entity';
+import { ErrorCodes } from '../common/error-codes.enum';
 
 export function GqlAuthGuard(...neccessaryPermissions: Permissions[]) {
   @Injectable()
@@ -51,10 +52,10 @@ export function GqlAuthGuard(...neccessaryPermissions: Permissions[]) {
       const req = ctx.getContext().req;
       const user = await this._authenticate(req);
       if (!user) {
-        throw new UnauthorizedException();
+        throw new AuthenticationError('Вы не авторизованы');
       }
       if (!this._hasUserPersmissions(user)) {
-        return false;
+        throw new ApolloError('Нет доступа', ErrorCodes.FORBIDDEN);
       }
 
       return true;
