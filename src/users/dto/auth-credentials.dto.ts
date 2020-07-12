@@ -1,4 +1,4 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsString, MinLength, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { InputType, Field } from '@nestjs/graphql';
 
@@ -6,13 +6,13 @@ import { InputType, Field } from '@nestjs/graphql';
 export class AuthCredentialsDto {
   @ApiProperty()
   @IsString()
-  @MinLength(3)
+  @IsNotEmpty()
   @Field()
   email: string;
 
   @ApiProperty()
   @IsString()
-  @MinLength(2)
+  @MinLength(8)
   @Field()
   password: string;
 }

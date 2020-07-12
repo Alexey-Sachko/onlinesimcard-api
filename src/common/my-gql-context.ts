@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-export interface MyGqlContext {
+export type MyGqlContext = {
   req: Request;
   res: Response;
-}
+};

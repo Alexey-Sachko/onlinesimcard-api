@@ -89,6 +89,7 @@ export class UsersService {
           password: ROOT_ADMIN_PASSWORD,
         },
         role,
+        true,
       );
       this.logger.verbose('Root user has been created');
     } catch (error) {
@@ -128,6 +129,7 @@ export class UsersService {
   async createUser(
     userSignupDto: UserSignupDto,
     role?: Role,
+    verified?: boolean,
   ): Promise<RegisterPayloadType> {
     const { email, password } = userSignupDto;
     const userWithEmailExists = await this.usersRepository.findOne({ email });
@@ -146,13 +148,16 @@ export class UsersService {
     user.email = email;
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
-    user.verified = false;
+    user.verified = verified || false;
     if (role) {
       user.role = role;
     }
 
     await user.save();
-    await this.createVerifyToken(user);
+    if (!verified) {
+      await this.createVerifyToken(user);
+    }
+
     return {
       result: true,
     };
