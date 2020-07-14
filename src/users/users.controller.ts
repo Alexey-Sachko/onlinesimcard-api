@@ -12,14 +12,11 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { SwaggerTags } from 'src/swagger/tags';
-import { UserSignupDto } from './dto/user-signup.dto';
 import { UsersService } from './users.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { Permissions } from './permissions.enum';
 import { User } from './user.entity';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { AuthService } from './auth.service';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { GetUser } from './get-user.decorator';
 import { HasPermissions } from './permissions.decorator';
 import { PermissionsGuard } from './permissions.guard';
@@ -27,31 +24,7 @@ import { PermissionsGuard } from './permissions.guard';
 @ApiTags(SwaggerTags.Users)
 @Controller('users')
 export class UsersController {
-  constructor(
-    private usersService: UsersService,
-    private _authService: AuthService,
-  ) {}
-
-  @ApiOperation({ summary: 'Регистрация пользователя' })
-  @Post('/signup')
-  async signup(@Body(ValidationPipe) userSignupDto: UserSignupDto) {
-    return this.usersService.createUser(userSignupDto);
-  }
-
-  @ApiOperation({ summary: 'Залогиниться по логину и паролю' })
-  @Post('/login')
-  async login(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto) {
-    return this._authService.login(authCredentialsDto);
-  }
-
-  @ApiOperation({ summary: 'Протестировать отправку email' })
-  @ApiBearerAuth()
-  @HasPermissions(Permissions.WriteEmail)
-  @UseGuards(AuthGuard(), PermissionsGuard)
-  @Post('/testemail')
-  async testSendEmail(@Body('to') to: string, @Body('token') token: string) {
-    return this.usersService.testSendEmail(to, token);
-  }
+  constructor(private usersService: UsersService) {}
 
   @ApiOperation({ summary: 'Подтвердить учетную запись' })
   @Get('/verify/:token')

@@ -22,6 +22,7 @@ import { RegisterPayloadType } from './types/register-payload.type';
 import { createError } from 'src/common/errors/create-error';
 import { AuthProviderType } from './auth-provider-type.enum';
 import { AuthProvider } from './auth-provider.entity';
+import { ErrorType } from 'src/common/errors/error.type';
 
 dotenv.config();
 
@@ -195,11 +196,12 @@ export class UsersService {
     return authProvider;
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string): Promise<ErrorType | null> {
     const rows = await this.usersRepository.delete({ id });
     if (!rows.affected) {
-      throw new NotFoundException(`Не найдено пользователя с id: "${id}"`);
+      return createError('id', `Не найдено пользователя с id: "${id}"`);
     }
+    return null;
   }
 
   async verifyUser(tokenString: string) {

@@ -1,3 +1,5 @@
+import { registerEnumType } from '@nestjs/graphql';
+
 export enum Permissions {
   ReadUsers = 'ReadUsers',
   WriteUsers = 'WriteUsers',
@@ -8,3 +10,8 @@ export enum Permissions {
   ReadAdminPage = 'ReadAdminPage',
   WriteArticles = 'WriteArticles',
 }
+
+registerEnumType(Permissions, {
+  name: 'Permissions',
+  description: 'Разрешения',
+});
