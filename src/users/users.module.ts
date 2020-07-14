@@ -12,10 +12,19 @@ import { PermToken } from './perm-token.entity';
 import { PassportModule } from '@nestjs/passport';
 import { AuthResolver } from './auth.resolver';
 import { UserResolver } from './user.resolver';
+import { AuthController } from './auth.controller';
+import { VkAuthService } from './vk/vk-auth.service';
+import { AuthProvider } from './auth-provider.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, VerifyToken, Role, PermToken]),
+    TypeOrmModule.forFeature([
+      User,
+      VerifyToken,
+      Role,
+      PermToken,
+      AuthProvider,
+    ]),
     PassportModule.register({
       defaultStrategy: 'jwt-perm',
     }),
@@ -26,13 +35,14 @@ import { UserResolver } from './user.resolver';
       },
     }),
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, AuthController],
   providers: [
     UsersService,
     EmailClient,
     AuthService,
     AuthResolver,
     UserResolver,
+    VkAuthService,
   ],
   exports: [UsersService, JwtModule],
 })

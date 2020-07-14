@@ -4,6 +4,7 @@ import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { MyGqlContext } from '../common/my-gql-context';
 import { ErrorType } from 'src/common/errors/error.type';
 import { validate } from 'src/common/validate';
+import { setTokenCookie } from './set-token-cookie';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -29,11 +30,7 @@ export class AuthResolver {
       return data;
     }
 
-    context.res.cookie('accessToken', data, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 15,
-      path: '/',
-    });
+    setTokenCookie(context.res, data);
     return null;
   }
 

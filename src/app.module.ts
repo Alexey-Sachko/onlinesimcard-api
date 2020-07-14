@@ -16,6 +16,7 @@ import { FreeModule } from './free/free.module';
 import { ArticlesModule } from './articles/articles.module';
 import { ArticleORM } from './articles/article.entity';
 import { PermToken } from './users/perm-token.entity';
+import { AuthProvider } from './users/auth-provider.entity';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ dotenv.config();
         Role,
         PermToken,
         ArticleORM,
+        AuthProvider,
       ],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),

@@ -9,20 +9,21 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { VerifyToken } from './verify-token.entity';
 import { Role } from './role.entity';
+import { AuthProvider } from './auth-provider.entity';
 
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ nullable: true })
+  email?: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  password?: string;
 
-  @Column()
-  salt: string;
+  @Column({ nullable: true })
+  salt?: string;
 
   @Column()
   verified: boolean;
@@ -35,6 +36,12 @@ export class User extends BaseEntity {
     role => role.id,
   )
   role: Role;
+
+  @OneToMany(
+    type => AuthProvider,
+    authProvider => authProvider.userId,
+  )
+  authProviders: AuthProvider[];
 
   @OneToMany(
     type => VerifyToken,

@@ -20,6 +20,8 @@ import { Permissions } from './permissions.enum';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { RegisterPayloadType } from './types/register-payload.type';
 import { createError } from 'src/common/errors/create-error';
+import { AuthProviderType } from './auth-provider-type.enum';
+import { AuthProvider } from './auth-provider.entity';
 
 dotenv.config();
 
@@ -39,6 +41,9 @@ export class UsersService {
 
     @InjectRepository(Role)
     private rolesRepository: Repository<Role>,
+
+    @InjectRepository(AuthProvider)
+    private _authProviderReposirory: Repository<AuthProvider>,
 
     @InjectConnection()
     private connection: Connection,
@@ -160,6 +165,34 @@ export class UsersService {
     return {
       result: true,
     };
+  }
+
+  async createOrGegAuthProvider(
+    key: string,
+    authProviderType: AuthProviderType,
+  ): Promise<AuthProvider> {
+    const foundAuthProvider = await this._authProviderReposirory.findOne(
+      {
+        key,
+        type: authProviderType,
+      },
+      { relations: ['user'] },
+    );
+    if (foundAuthProvider) {
+      return foundAuthProvider;
+    }
+
+    const user = new User();
+    user.verified = true;
+    await user.save();
+
+    const authProvider = new AuthProvider();
+    authProvider.key = key;
+    authProvider.type = authProviderType;
+    authProvider.user = user;
+
+    await authProvider.save();
+    return authProvider;
   }
 
   async deleteUser(id: string) {
