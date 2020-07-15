@@ -17,6 +17,7 @@ const VK_CLIENT_ID = process.env.VK_CLIENT_ID;
 const VK_CLIENT_SECRET = process.env.VK_CLIENT_SECRET;
 const VK_OAUTH_URL = process.env.VK_OAUTH_URL;
 const VK_OAUTH_REDIRECT_URI = process.env.VK_OAUTH_REDIRECT_URI;
+const VK_SERVICE_KEY = process.env.VK_SERVICE_KEY;
 
 const VkApi: AxiosInstance = Axios.create({
   baseURL: VK_OAUTH_URL,
@@ -60,10 +61,22 @@ export class VkAuthService {
       },
     });
 
+    console.log(vkRes.data);
+
     const { user_id } = vkRes.data;
     if (!user_id) {
       throw new Error('Вк oauth не отправил user_id');
     }
+
+    const vkProfile = await Axios.get(`https://api.vk.com/method/users.get`, {
+      params: {
+        access_token: VK_SERVICE_KEY,
+        v: '5.52',
+        user_id,
+      },
+    });
+
+    console.log(vkProfile.data);
 
     const authProvider = await this._usersService.createOrGegAuthProvider(
       user_id.toString(),

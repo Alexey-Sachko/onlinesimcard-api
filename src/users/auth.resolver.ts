@@ -6,11 +6,11 @@ import { MyGqlContext } from '../common/my-gql-context';
 import { ErrorType } from 'src/common/errors/error.type';
 import { validate } from 'src/common/validate';
 import { setTokenCookie } from './set-token-cookie';
-import { Permissions } from './permissions.enum';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { GetGqlUser } from './get-user.decorator';
 import { GqlAuthGuard } from './gql-auth.guard';
+import { MeResponse } from './types/me-response.type';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -19,17 +19,18 @@ export class AuthResolver {
     private readonly _usersService: UsersService,
   ) {}
 
-  @Query(returns => [Permissions], { nullable: true })
+  @Query(returns => MeResponse)
   @UseGuards(GqlAuthGuard())
-  async ownPermissions(
+  async me(
     @GetGqlUser()
     user: User,
-  ): Promise<Permissions[] | null> {
+  ): Promise<MeResponse> {
     const role = await this._usersService.getUserRole(user);
-    if (!role) {
-      return null;
-    }
-    return role.permissions;
+    return {
+      id: user.id,
+      email: user.email,
+      permissions: role?.permissions,
+    };
   }
 
   @Mutation(returns => [ErrorType], { nullable: true })
