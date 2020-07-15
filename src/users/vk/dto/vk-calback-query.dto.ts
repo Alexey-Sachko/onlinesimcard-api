@@ -1,6 +1,9 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsJSON } from 'class-validator';
 
-export class VkCakkbackQueryDto {
+export class VkCallbackQueryDto {
   @IsNotEmpty()
   code: string;
+
+  @IsJSON()
+  state: string;
 }

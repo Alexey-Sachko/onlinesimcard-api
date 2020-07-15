@@ -44,6 +44,16 @@ export class AuthService {
     return user;
   }
 
+  async createTokensByUser(user: User) {
+    const payload: JwtPayload = {
+      email: user.email,
+      id: user.id,
+      role: user.role,
+    };
+    const accessToken = await this.jwtService.signAsync(payload);
+    return accessToken;
+  }
+
   async login(
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<ErrorType[] | string> {
@@ -53,11 +63,10 @@ export class AuthService {
     }
 
     if (!user.verified) {
-      return [createError('$not_verified', 'Подтвердите учетную запись')];
+      return [createError('email', 'Подтвердите учетную запись')];
     }
 
-    const payload: JwtPayload = { email: user.email, role: user.role };
-    const accessToken = await this.jwtService.signAsync(payload);
-    return accessToken;
+    const token = await this.createTokensByUser(user);
+    return token;
   }
 }

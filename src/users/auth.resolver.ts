@@ -19,7 +19,7 @@ export class AuthResolver {
     private readonly _usersService: UsersService,
   ) {}
 
-  @Query(returns => [Permissions])
+  @Query(returns => [Permissions], { nullable: true })
   @UseGuards(GqlAuthGuard())
   async ownPermissions(
     @GetGqlUser()
