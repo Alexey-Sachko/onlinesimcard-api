@@ -171,6 +171,8 @@ export class UsersService {
   async createOrGegAuthProvider(
     key: string,
     authProviderType: AuthProviderType,
+    firstName?: string,
+    lastName?: string,
   ): Promise<AuthProvider> {
     const foundAuthProvider = await this._authProviderReposirory.findOne(
       {
@@ -184,6 +186,8 @@ export class UsersService {
     }
 
     const user = new User();
+    user.fistName = firstName;
+    user.lastName = lastName;
     user.verified = true;
     await user.save();
 

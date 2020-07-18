@@ -18,9 +18,14 @@ const VK_CLIENT_SECRET = process.env.VK_CLIENT_SECRET;
 const VK_OAUTH_URL = process.env.VK_OAUTH_URL;
 const VK_OAUTH_REDIRECT_URI = process.env.VK_OAUTH_REDIRECT_URI;
 const VK_SERVICE_KEY = process.env.VK_SERVICE_KEY;
+const VK_API_URL = process.env.VK_API_URL;
 
-const VkApi: AxiosInstance = Axios.create({
+const VkOauthApi: AxiosInstance = Axios.create({
   baseURL: VK_OAUTH_URL,
+});
+
+const VkApi = Axios.create({
+  baseURL: VK_API_URL,
 });
 
 @Injectable()
@@ -52,7 +57,7 @@ export class VkAuthService {
   ) {
     const { code, state: stateString } = vkCallbackQueryDto;
     const state: OauthState = JSON.parse(stateString);
-    const vkRes = await VkApi.get<VkAccessTokenResponse>('/access_token', {
+    const vkRes = await VkOauthApi.get<VkAccessTokenResponse>('/access_token', {
       params: {
         client_id: VK_CLIENT_ID,
         client_secret: VK_CLIENT_SECRET,
@@ -61,14 +66,12 @@ export class VkAuthService {
       },
     });
 
-    console.log(vkRes.data);
-
     const { user_id } = vkRes.data;
     if (!user_id) {
       throw new Error('Вк oauth не отправил user_id');
     }
 
-    const vkProfile = await Axios.get(`https://api.vk.com/method/users.get`, {
+    const vkProfileRes = await VkApi.get(`/method/users.get`, {
       params: {
         access_token: VK_SERVICE_KEY,
         v: '5.52',
@@ -76,11 +79,13 @@ export class VkAuthService {
       },
     });
 
-    console.log(vkProfile.data);
+    const vkUser = vkProfileRes.data.response[0];
 
     const authProvider = await this._usersService.createOrGegAuthProvider(
       user_id.toString(),
       AuthProviderType.VKONTAKTE,
+      vkUser.first_name,
+      vkUser.last_name,
     );
     const uiRedirectUri = state.redirect_uri || '/api/v1/graphql';
     const accessToken = await this._authService.createTokensByUser(

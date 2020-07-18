@@ -9,6 +9,12 @@ export class MeResponse {
   @Field({ nullable: true })
   email?: string;
 
+  @Field({ nullable: true })
+  firstName?: string;
+
+  @Field({ nullable: true })
+  lastName?: string;
+
   @Field(type => [Permissions], { nullable: true })
   permissions: Permissions[];
 }

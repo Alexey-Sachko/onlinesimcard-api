@@ -26,10 +26,13 @@ export class AuthResolver {
     user: User,
   ): Promise<MeResponse> {
     const role = await this._usersService.getUserRole(user);
+
     return {
       id: user.id,
       email: user.email,
       permissions: role?.permissions,
+      firstName: user.fistName,
+      lastName: user.lastName,
     };
   }
 

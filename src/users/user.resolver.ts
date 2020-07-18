@@ -25,8 +25,11 @@ export class UserResolver {
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteUsers))
-  @Mutation(returns => ErrorType)
-  async deleteUser(id: string): Promise<ErrorType | null> {
+  @Mutation(returns => ErrorType, { nullable: true })
+  async deleteUser(
+    @Args('id')
+    id: string,
+  ): Promise<ErrorType | null> {
     return this._usersService.deleteUser(id);
   }
 }

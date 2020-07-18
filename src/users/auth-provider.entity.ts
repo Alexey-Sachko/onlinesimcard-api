@@ -22,6 +22,6 @@ export class AuthProvider extends BaseEntity {
   @Column()
   userId: string;
 
-  @ManyToOne(type => User)
+  @ManyToOne(type => User, { onDelete: 'CASCADE' })
   user: User;
 }
