@@ -7,6 +7,9 @@ import { PriceEntity } from './price.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { CreatePriceDto } from './dto/create-price.dto';
 import { ErrorType } from 'src/common/errors/error.type';
+import { CountryApiType } from './types/country-api.type';
+import { countriesDictionary } from './data/countries-dictionary';
+import { createError } from 'src/common/errors/create-error';
 
 @Injectable()
 export class ServicesService {
@@ -24,10 +27,24 @@ export class ServicesService {
     return this._serviceRepository.find();
   }
 
-  async createService(
+  async createOrUpdateService(
     createServiceDto: CreateServiceDto,
-  ): Promise<ErrorType | null> {
-    const { code, name } = createServiceDto; // TODO check if service exists in api sms-hub
+  ): Promise<ErrorType[] | null> {
+    const { code, name } = createServiceDto;
+    const serviceExists = await this._serviceRepository.findOne({
+      where: { code },
+    });
+
+    if (serviceExists) {
+      serviceExists.name = name;
+      await serviceExists.save();
+      return null;
+    }
+
+    if (!(await this._smsActivateClient.hasService(code))) {
+      return [createError('code', `Нет такого сервиса '${code}' в API`)];
+    }
+
     const service = new Service();
     service.code = code;
     service.name = name;
@@ -46,7 +63,17 @@ export class ServicesService {
   async createOrUpdatePrice(
     createPriceDto: CreatePriceDto,
   ): Promise<ErrorType[] | null> {
-    const { amount, serviceCode, countryCode } = createPriceDto; // TODO check existing country in api
+    const { amount, serviceCode, countryCode } = createPriceDto;
+
+    if (!(countryCode in countriesDictionary)) {
+      return [
+        createError(
+          'countryCode',
+          `Нет поля '${countryCode}' в countriesDictionary`,
+        ),
+      ];
+    }
+
     const service = await this._serviceRepository.findOne({
       where: {
         code: serviceCode,
@@ -54,7 +81,9 @@ export class ServicesService {
     });
 
     if (!service) {
-      throw new Error(`Нет сервиса с code: '${serviceCode}'`);
+      return [
+        createError('serviceCode', `Нет сервиса с code: '${serviceCode}'`),
+      ];
     }
 
     const priceFound = await this._priceRepository.findOne({
@@ -77,5 +106,22 @@ export class ServicesService {
 
     await price.save();
     return null;
+  }
+
+  async getApiCountries() {
+    const pricesInfo = await this._smsActivateClient.getPrices();
+    const entries = Object.entries(pricesInfo);
+    const countries: CountryApiType[] = entries
+      .map(([code]) => ({
+        code,
+        name: countriesDictionary[code],
+      }))
+      .filter(({ name }) => Boolean(name));
+
+    return countries;
+  }
+
+  async getApiPrices() {
+    return this._smsActivateClient.getPrices();
   }
 }

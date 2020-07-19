@@ -33,12 +33,17 @@ export class SmsActivateClient {
     return { name, value };
   }
 
-  async getNumbersStatus() {
+  async hasService(code: string): Promise<boolean> {
+    const numsCount = await this.getNumbersCount();
+    if (`${code}_0` in numsCount) {
+      return true;
+    }
+    return false;
+  }
+
+  async getNumbersCount() {
     const res = await this.callApi<GetAvailableNumbersRO | string>(
       'getNumbersStatus',
-      {
-        country: 0,
-      },
     );
 
     if (typeof res.data === 'string') {
@@ -74,7 +79,6 @@ export class SmsActivateClient {
 
   async getPrices() {
     const res = await this.callApi<GetPricesRO>('getPrices');
-    const russianPrices = res.data?.[0];
-    return russianPrices;
+    return res.data;
   }
 }
