@@ -36,6 +36,7 @@ export class UserResolver {
     return this._usersService.deleteUser(id);
   }
 
+  @UseGuards(GqlAuthGuard(Permissions.RolesRead))
   @Query(returns => [RoleType])
   async roles(): Promise<RoleType[]> {
     return this._usersService.getRoles();
