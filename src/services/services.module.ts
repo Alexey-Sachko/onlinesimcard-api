@@ -17,6 +17,7 @@ import { UsersModule } from 'src/users/users.module';
     UsersModule,
   ],
   controllers: [],
+  exports: [ServicesService],
   providers: [ServicesService, SmsActivateClient, ServicesResolver],
 })
 export class ServicesModule {}
