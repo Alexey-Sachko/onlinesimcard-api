@@ -60,6 +60,19 @@ export class ServicesService {
     return this._priceRepository.find({ where: { serviceId: service.id } });
   }
 
+  async getPrice(serviceCode: string, countryCode: string) {
+    // TODO можно упростить 2 запросами: сначала найти сервис, а потом price по serviceId
+    return this._priceRepository.findOne({
+      join: { alias: 'price', leftJoin: { service: 'price.service' } },
+      where: qb => {
+        qb.where({ countryCode }).andWhere('service.code = :serviceCode', {
+          serviceCode,
+        });
+      },
+      relations: ['service'],
+    });
+  }
+
   async createOrUpdatePrice(
     createPriceDto: CreatePriceDto,
   ): Promise<ErrorType[] | null> {

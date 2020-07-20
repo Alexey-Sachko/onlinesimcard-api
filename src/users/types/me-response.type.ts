@@ -17,4 +17,7 @@ export class MeResponse {
 
   @Field(type => [Permissions], { nullable: true })
   permissions: Permissions[];
+
+  @Field()
+  balanceAmount: number;
 }

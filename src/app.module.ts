@@ -18,6 +18,8 @@ import { ArticleORM } from './articles/article.entity';
 import { PermToken } from './users/perm-token.entity';
 import { AuthProvider } from './users/auth-provider.entity';
 import { PriceEntity } from './services/price.entity';
+import { ActivationsModule } from './activations/activations.module';
+import { Activation } from './activations/entity/activation.entity';
 
 dotenv.config();
 
@@ -41,6 +43,7 @@ dotenv.config();
         ArticleORM,
         AuthProvider,
         PriceEntity,
+        Activation,
       ],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),
@@ -57,6 +60,7 @@ dotenv.config();
     ServicesModule,
     FreeModule,
     ArticlesModule,
+    ActivationsModule,
   ],
   controllers: [],
   providers: [

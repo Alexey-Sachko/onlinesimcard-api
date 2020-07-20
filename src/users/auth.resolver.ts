@@ -33,6 +33,7 @@ export class AuthResolver {
       permissions: role?.permissions,
       firstName: user.fistName,
       lastName: user.lastName,
+      balanceAmount: user.balanceAmount,
     };
   }
 
