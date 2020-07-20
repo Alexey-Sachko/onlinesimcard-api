@@ -6,6 +6,7 @@ import { Service } from './service.entity';
 import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
 import { ServicesResolver } from './services.resolver';
 import { PriceEntity } from './price.entity';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { PriceEntity } from './price.entity';
     PassportModule.register({
       defaultStrategy: 'jwt-perm',
     }),
+    UsersModule,
   ],
   controllers: [],
   providers: [ServicesService, SmsActivateClient, ServicesResolver],

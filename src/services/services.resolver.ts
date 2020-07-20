@@ -6,6 +6,7 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { validate } from 'src/common/validate';
@@ -15,6 +16,8 @@ import { CreatePriceDto } from './dto/create-price.dto';
 import { PriceType } from './types/price.type';
 import { Service } from './service.entity';
 import { CountryApiType } from './types/country-api.type';
+import { GqlAuthGuard } from 'src/users/gql-auth.guard';
+import { Permissions } from 'src/users/permissions.enum';
 
 @Resolver(of => ServiceType)
 export class ServicesResolver {
@@ -23,10 +26,6 @@ export class ServicesResolver {
   @Query(returns => [CountryApiType])
   async countriesFromApi() {
     return this._servicesService.getApiCountries();
-  }
-
-  async pricesFromApi() {
-    return this._servicesService.getApiPrices();
   }
 
   @Query(returns => [ServiceType])
@@ -39,6 +38,7 @@ export class ServicesResolver {
     return this._servicesService.getPricesByService(service);
   }
 
+  @UseGuards(GqlAuthGuard(Permissions.WriteServices))
   @Mutation(returns => [ErrorType], { nullable: true })
   async saveService(
     @Args('createServiceDto') createServiceDto: CreateServiceDto,
@@ -50,6 +50,7 @@ export class ServicesResolver {
     return this._servicesService.createOrUpdateService(createServiceDto);
   }
 
+  @UseGuards(GqlAuthGuard(Permissions.WriteServices))
   @Mutation(returns => [ErrorType], { nullable: true })
   async savePrice(
     @Args('createPriceDto')
