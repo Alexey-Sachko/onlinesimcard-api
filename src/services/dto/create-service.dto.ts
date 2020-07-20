@@ -1,14 +1,13 @@
-import { IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { MinLength } from 'class-validator';
+import { InputType, Field } from '@nestjs/graphql';
 
+@InputType()
 export class CreateServiceDto {
-  @ApiProperty()
-  @IsString()
   @MinLength(1)
+  @Field()
   code: string;
 
-  @ApiProperty()
-  @IsString()
   @MinLength(1)
+  @Field()
   name: string;
 }

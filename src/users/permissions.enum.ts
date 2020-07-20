@@ -9,6 +9,7 @@ export enum Permissions {
   WriteEmail = 'WriteEmail',
   ReadAdminPage = 'ReadAdminPage',
   WriteArticles = 'WriteArticles',
+  WriteServices = 'WriteServices',
 }
 
 registerEnumType(Permissions, {

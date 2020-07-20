@@ -1,67 +1,127 @@
-import {
-  Injectable,
-  ConflictException,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Service } from './service.entity';
-import { CreateServiceDto } from './dto/create-service.dto';
 import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
+import { PriceEntity } from './price.entity';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { CreatePriceDto } from './dto/create-price.dto';
+import { ErrorType } from 'src/common/errors/error.type';
+import { CountryApiType } from './types/country-api.type';
+import { countriesDictionary } from './data/countries-dictionary';
+import { createError } from 'src/common/errors/create-error';
 
 @Injectable()
 export class ServicesService {
   constructor(
     @InjectRepository(Service)
-    private serviceRepository: Repository<Service>,
-    private smsActivateClient: SmsActivateClient,
+    private readonly _serviceRepository: Repository<Service>,
+
+    @InjectRepository(PriceEntity)
+    private readonly _priceRepository: Repository<PriceEntity>,
+
+    private readonly _smsActivateClient: SmsActivateClient,
   ) {}
 
-  async getServices() {
-    const services = await this.serviceRepository.find();
-    const prices = await this.getPrices();
-    const servicesWithPrices = services.map(service => {
-      const price = prices[service.code];
-      return { ...service, price };
-    });
-
-    return servicesWithPrices;
+  async getServices(): Promise<Service[]> {
+    return this._serviceRepository.find();
   }
 
-  async createService(createServiceDto: CreateServiceDto) {
+  async createOrUpdateService(
+    createServiceDto: CreateServiceDto,
+  ): Promise<ErrorType[] | null> {
     const { code, name } = createServiceDto;
-    const smsActivateServices = await this.smsActivateClient.getNumbersStatus();
+    const serviceExists = await this._serviceRepository.findOne({
+      where: { code },
+    });
 
-    if (!smsActivateServices[`${code}_0`]) {
-      throw new BadRequestException(
-        `сервис с code: '${code}' отстутствует у sms-activate`,
-      );
+    if (serviceExists) {
+      serviceExists.name = name;
+      await serviceExists.save();
+      return null;
+    }
+
+    if (!(await this._smsActivateClient.hasService(code))) {
+      return [createError('code', `Нет такого сервиса '${code}' в API`)];
     }
 
     const service = new Service();
     service.code = code;
     service.name = name;
-    try {
-      await service.save();
-      return service;
-    } catch (error) {
-      if (error.code === '23505') {
-        throw new ConflictException(`сервис с code: '${code}' уже существует`);
-      } else {
-        throw error;
-      }
-    }
+    await service.save();
+    return null;
   }
 
-  async deleteService(id: string) {
-    const rows = await this.serviceRepository.delete({ id });
-    if (!rows.affected) {
-      throw new NotFoundException(`нет сервиса с id: '${id}'`);
-    }
+  async getPrices(): Promise<PriceEntity[]> {
+    return this._priceRepository.find();
   }
 
-  private async getPrices() {
-    return this.smsActivateClient.getPrices();
+  async getPricesByService(service: Service) {
+    return this._priceRepository.find({ where: { serviceId: service.id } });
+  }
+
+  async createOrUpdatePrice(
+    createPriceDto: CreatePriceDto,
+  ): Promise<ErrorType[] | null> {
+    const { amount, serviceCode, countryCode } = createPriceDto;
+
+    if (!(countryCode in countriesDictionary)) {
+      return [
+        createError(
+          'countryCode',
+          `Нет поля '${countryCode}' в countriesDictionary`,
+        ),
+      ];
+    }
+
+    const service = await this._serviceRepository.findOne({
+      where: {
+        code: serviceCode,
+      },
+    });
+
+    if (!service) {
+      return [
+        createError('serviceCode', `Нет сервиса с code: '${serviceCode}'`),
+      ];
+    }
+
+    const priceFound = await this._priceRepository.findOne({
+      where: {
+        countryCode,
+        serviceId: service.id,
+      },
+    });
+
+    if (priceFound) {
+      priceFound.amount = amount;
+      await priceFound.save();
+      return null;
+    }
+
+    const price = new PriceEntity();
+    price.amount = amount;
+    price.service = service;
+    price.countryCode = countryCode;
+
+    await price.save();
+    return null;
+  }
+
+  async getApiCountries() {
+    const pricesInfo = await this._smsActivateClient.getPrices();
+    const entries = Object.entries(pricesInfo);
+    const countries: CountryApiType[] = entries
+      .map(([code]) => ({
+        code,
+        name: countriesDictionary[code],
+      }))
+      .filter(({ name }) => Boolean(name));
+
+    return countries;
+  }
+
+  async getApiPrices() {
+    return this._smsActivateClient.getPrices();
   }
 }

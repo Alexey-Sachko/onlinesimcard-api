@@ -17,6 +17,7 @@ import { ArticlesModule } from './articles/articles.module';
 import { ArticleORM } from './articles/article.entity';
 import { PermToken } from './users/perm-token.entity';
 import { AuthProvider } from './users/auth-provider.entity';
+import { PriceEntity } from './services/price.entity';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ dotenv.config();
         PermToken,
         ArticleORM,
         AuthProvider,
+        PriceEntity,
       ],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),
