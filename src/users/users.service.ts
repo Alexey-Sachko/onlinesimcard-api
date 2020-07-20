@@ -117,6 +117,19 @@ export class UsersService {
     await role.save();
   }
 
+  async setRole(user: User, roleName: string): Promise<ErrorType[] | null> {
+    const roleFound = await this.rolesRepository.findOne({
+      where: { name: roleName },
+    });
+    if (!roleFound) {
+      return [createError('roleName', `Нет роли с roleName: '${roleName}'`)];
+    }
+
+    user.role = roleFound;
+    await user.save();
+    return null;
+  }
+
   async updateRole(updateRoleDto: UpdateRoleDto) {
     const { id } = updateRoleDto;
     const found = await this.rolesRepository.findOne({ id });
