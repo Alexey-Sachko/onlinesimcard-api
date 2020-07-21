@@ -5,6 +5,7 @@ import { ActivationsService } from './activations.service';
 import { Activation } from './entity/activation.entity';
 import { ServicesModule } from 'src/services/services.module';
 import { UsersModule } from 'src/users/users.module';
+import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { UsersModule } from 'src/users/users.module';
     ServicesModule,
     UsersModule,
   ],
-  providers: [ActivationsResolver, ActivationsService],
+  providers: [ActivationsResolver, ActivationsService, SmsActivateClient],
 })
 export class ActivationsModule {}

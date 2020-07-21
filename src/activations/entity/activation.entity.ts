@@ -38,11 +38,11 @@ export class Activation extends DefaultEntity {
   )
   user: User;
 
-  @ManyToOne(
-    type => Transaction,
-    transaction => transaction.id,
-  )
-  transaction: Transaction;
+  // @ManyToOne(
+  //   type => Transaction,
+  //   transaction => transaction.id,
+  // )
+  // transaction: Transaction;
 
   @ManyToOne(
     type => PriceEntity,
