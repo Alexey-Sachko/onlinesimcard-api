@@ -13,6 +13,7 @@ export class SmsActivateClient {
     this.Api = Axios.create({
       baseURL: process.env.SMS_ACTIVATE_API_URL,
     });
+    // TODO logger
   }
 
   private callApi<ResponseType>(action: string, query?: Record<string, any>) {
@@ -65,8 +66,11 @@ export class SmsActivateClient {
     return value;
   }
 
-  async getNumber() {
-    const res = await this.callApi<string>('getNumber');
+  async getNumber(serviceCode: string, countryCode: string) {
+    const res = await this.callApi<string>('getNumber', {
+      service: serviceCode,
+      country: countryCode,
+    });
     const { name, value } = this.parseTextData(res.data);
 
     if (name !== 'ACCESS_NUMBER') {
@@ -80,5 +84,9 @@ export class SmsActivateClient {
   async getPrices() {
     const res = await this.callApi<GetPricesRO>('getPrices');
     return res.data;
+  }
+
+  async getNumberStub(serviceCode: string, countryCode: string) {
+    return { operId: '213131313', number: '+79089248826' };
   }
 }

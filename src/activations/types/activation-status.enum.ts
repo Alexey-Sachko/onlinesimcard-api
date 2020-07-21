@@ -1,3 +1,5 @@
+import { registerEnumType } from '@nestjs/graphql';
+
 export enum ActivationStatus {
   NEW = 'NEW', // Только созданная активация
   SENT_AGAIN = 'SENT_AGAIN', // Повторно отправлен код
@@ -7,3 +9,4 @@ export enum ActivationStatus {
   FINISHED = 'FINISHED', // Активация завершена
   ERROR = 'ERROR', // Произошла ошибка
 }
+registerEnumType(ActivationStatus, { name: 'ActivationStatus' });
