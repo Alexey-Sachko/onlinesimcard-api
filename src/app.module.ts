@@ -20,6 +20,7 @@ import { AuthProvider } from './users/auth-provider.entity';
 import { PriceEntity } from './services/price.entity';
 import { ActivationsModule } from './activations/activations.module';
 import { Activation } from './activations/entity/activation.entity';
+import { ActivationCode } from './activations/entity/activation-code.entity';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ dotenv.config();
         AuthProvider,
         PriceEntity,
         Activation,
+        ActivationCode,
       ],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),

@@ -6,10 +6,11 @@ import { Activation } from './entity/activation.entity';
 import { ServicesModule } from 'src/services/services.module';
 import { UsersModule } from 'src/users/users.module';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
+import { ActivationCode } from './entity/activation-code.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Activation]),
+    TypeOrmModule.forFeature([Activation, ActivationCode]),
     ServicesModule,
     UsersModule,
   ],

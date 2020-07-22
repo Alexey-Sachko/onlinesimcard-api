@@ -10,48 +10,52 @@ import { ServicesService } from 'src/services/services.service';
 import { createError } from 'src/common/errors/create-error';
 import { ErrorType } from 'src/common/errors/error.type';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
-
-type Queue = {
-  sourceActivationId: string;
-};
+import { SmsActivationStatus } from 'src/common/smsActivateClient/sms-activation-status.enum';
+import { ActivationCode } from './entity/activation-code.entity';
+import { QueueStore } from './queue-store';
 
 @Injectable()
 export class ActivationsService {
-  private readonly _queue: Queue[] = [];
+  private readonly _queue: QueueStore;
 
   constructor(
     @InjectRepository(Activation)
     private readonly _activationRepository: Repository<Activation>,
+
+    @InjectRepository(ActivationCode)
+    private readonly _activationCodeRepository: Repository<ActivationCode>,
     private readonly _sercvicesService: ServicesService,
     private readonly _smsActivateClient: SmsActivateClient,
   ) {
-    this._startPollingActivates();
+    this._queue = new QueueStore();
+    this._startActualizer();
   }
 
   // При закпуске сервера запрашиваем активные активации и запускаем опрос источника
-  private async _startPollingActivates() {
+  private async _startActualizer() {
     const activeActivations = await this._activationRepository.find({
       where: [
-        { status: Not(ActivationStatus.FINISHED) },
-        { status: Not(ActivationStatus.CANCELLED) },
+        {
+          status: Not(ActivationStatus.FINISHED),
+        },
+        {
+          status: Not(ActivationStatus.CANCELLED),
+        },
       ],
     });
 
-    activeActivations.forEach(activation => {
-      this._queue.push({ sourceActivationId: activation.sourceActivationId });
+    if (!activeActivations) {
+      return;
+    }
+
+    // Стартуем очередь
+    activeActivations.forEach(({ sourceActivationId }) => {
+      this._queue.push(async () => {
+        await this._actualizeActivationStatus(sourceActivationId);
+      });
     });
-
-    await this._startHandlingQueue();
+    this._queue.start();
   }
-
-  private async _startHandlingQueue() {
-    this._queue.forEach(async () => {
-      const item = this._queue.shift();
-      await this._handleOneActivation(item);
-    });
-  }
-
-  private async _handleOneActivation({ sourceActivationId }: Queue) {}
 
   async myCurrentActivations(user: User): Promise<Activation[]> {
     const activations = await this._activationRepository.find({
@@ -67,6 +71,87 @@ export class ActivationsService {
       ],
     });
     return activations;
+  }
+
+  private async _actualizeActivationStatus(sourceOperId: string) {
+    const {
+      code,
+      status,
+      lastCode,
+    } = await this._smsActivateClient.getStatusStub(sourceOperId);
+    console.log('start actualization, sourceOperId:', sourceOperId);
+    const activation = await this._activationRepository.findOne({
+      where: { sourceActivationId: sourceOperId },
+    });
+
+    if (!activation) {
+      throw new Error(
+        `[ActivationsService._actualizeActivationStatus()] Не найдено активации в базе по sourceActivationId: ${sourceOperId}`,
+      );
+    }
+
+    // Если активация уже завершена или с ошибкой то выходим
+    switch (activation.status) {
+      case ActivationStatus.FINISHED:
+      case ActivationStatus.ERROR:
+      case ActivationStatus.CANCELLED:
+        return;
+    }
+
+    switch (status) {
+      case SmsActivationStatus.STATUS_CANCEL: {
+        activation.status = ActivationStatus.CANCELLED;
+        await activation.save();
+        break;
+      }
+      case SmsActivationStatus.STATUS_OK: {
+        // Синхронизируем полученный код
+        await this._createIfNotExistsActivationCode(code, activation);
+        activation.status = ActivationStatus.SMS_RECIEVED;
+        await activation.save();
+        break;
+      }
+      case SmsActivationStatus.STATUS_WAIT_CODE: {
+        activation.status = ActivationStatus.WAIT_CODE;
+        await activation.save();
+        break;
+      }
+      case SmsActivationStatus.STATUS_WAIT_RETRY: {
+        // Синхронизируем ранее полученный код
+        await this._createIfNotExistsActivationCode(lastCode, activation);
+        activation.status = ActivationStatus.WAIT_AGAIN;
+        await activation.save();
+        break;
+      }
+      default:
+        activation.status = ActivationStatus.ERROR;
+        await activation.save();
+        throw new Error(
+          `[ActivationsService._actualizeActivationStatus()] Не обработанный case status: ${status}`,
+        );
+    }
+
+    // Повторяем операцию пока не будет сохранен верный статус
+    setTimeout(() => {
+      this._actualizeActivationStatus(sourceOperId);
+    }, 1000);
+  }
+
+  private async _createIfNotExistsActivationCode(
+    codeValue: string,
+    activation: Activation,
+  ) {
+    const actCodeExists = await this._activationCodeRepository.findOne({
+      where: { activationId: activation.id, code: codeValue },
+    });
+    if (!actCodeExists) {
+      const actCode = new ActivationCode();
+      actCode.code = codeValue;
+      actCode.activation = activation;
+      await actCode.save();
+      return actCode;
+    }
+    return actCodeExists;
   }
 
   async createActivation(
@@ -111,9 +196,7 @@ export class ActivationsService {
     activation.expiresAt = expiresAt;
 
     await activation.save();
-
-    console.log(activation);
-
+    this._actualizeActivationStatus(apiOper.operId);
     // - Create transaction
     return null;
   }

@@ -1,9 +1,16 @@
-import { PrimaryGeneratedColumn, Column, ManyToOne, Entity } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  Entity,
+  OneToMany,
+} from 'typeorm';
 import { DefaultEntity } from 'src/common/default-entity';
 import { User } from 'src/users/user.entity';
 import { Transaction } from 'src/transactions/transaction.entity';
 import { PriceEntity } from 'src/services/price.entity';
 import { ActivationStatus } from '../types/activation-status.enum';
+import { ActivationCode } from './activation-code.entity';
 
 @Entity()
 export class Activation extends DefaultEntity {
@@ -13,7 +20,7 @@ export class Activation extends DefaultEntity {
   @Column({
     type: 'enum',
     enum: ActivationStatus,
-    default: ActivationStatus.NEW,
+    default: ActivationStatus.WAIT_CODE,
   })
   status: ActivationStatus;
 
@@ -49,4 +56,10 @@ export class Activation extends DefaultEntity {
     price => price.id,
   )
   price: PriceEntity;
+
+  @OneToMany(
+    type => ActivationCode,
+    activationCode => activationCode.activationId,
+  )
+  activationCodes: ActivationCode[];
 }
