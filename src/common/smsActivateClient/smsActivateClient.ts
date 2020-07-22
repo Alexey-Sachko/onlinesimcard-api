@@ -2,6 +2,7 @@ import Axios, { AxiosInstance } from 'axios';
 import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
 import { GetAvailableNumbersRO, GetPricesRO } from './smsActivateClient.types';
+import { SmsActivationStatus } from './sms-activation-status.enum';
 
 config();
 
@@ -71,7 +72,7 @@ export class SmsActivateClient {
       service: serviceCode,
       country: countryCode,
     });
-    const { name, value } = this.parseTextData(res.data);
+    const { name, value = '' } = this.parseTextData(res.data);
 
     if (name !== 'ACCESS_NUMBER') {
       throw new Error(`Ошибка sms-activate: '${name}'`);
@@ -88,5 +89,32 @@ export class SmsActivateClient {
 
   async getNumberStub(serviceCode: string, countryCode: string) {
     return { operId: '213131313', number: '+79089248826' };
+  }
+
+  async getStatus(operId: string) {
+    const res = await this.callApi<string>('getStatus', { id: operId });
+    const { name: status, value = '' } = this.parseTextData(res.data);
+
+    if (
+      !Object.values(SmsActivationStatus).includes(
+        status as SmsActivationStatus,
+      )
+    ) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+
+    if (status === SmsActivationStatus.STATUS_WAIT_RETRY) {
+      return { status, lastCode: value };
+    }
+
+    return { status, code: value };
+  }
+
+  async getStatusStub(operId: string) {
+    return {
+      status: SmsActivationStatus.STATUS_WAIT_CODE,
+      code: '',
+      lastCode: '',
+    };
   }
 }
