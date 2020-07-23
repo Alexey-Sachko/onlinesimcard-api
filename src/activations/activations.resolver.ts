@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
 import { ActivationsService } from './activations.service';
 import { User } from 'src/users/user.entity';
 import { CreateActivationInput } from './input/create-activation.input';
@@ -35,5 +35,27 @@ export class ActivationsResolver {
       user,
       createActivationInput,
     );
+  }
+
+  @UseGuards(GqlAuthGuard())
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async cancelActivation(
+    @GetGqlUser()
+    user: User,
+
+    @Args('activationId', { type: () => Int }) activationId: number,
+  ) {
+    return this._acivationsService.cancelActivation(user, activationId);
+  }
+
+  @UseGuards(GqlAuthGuard())
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async finishActivation(
+    @GetGqlUser()
+    user: User,
+
+    @Args('activationId', { type: () => Int }) activationId: number,
+  ) {
+    return this._acivationsService.finishActivation(user, activationId);
   }
 }

@@ -59,7 +59,7 @@ export class Activation extends DefaultEntity {
 
   @OneToMany(
     type => ActivationCode,
-    activationCode => activationCode.activationId,
+    activationCode => activationCode.activation,
   )
   activationCodes: ActivationCode[];
 }

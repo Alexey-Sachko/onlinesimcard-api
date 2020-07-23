@@ -15,7 +15,7 @@ export class ActivationCode extends DefaultEntity {
 
   @ManyToOne(
     type => Activation,
-    activation => activation.id,
+    activation => activation.activationCodes,
   )
   activation: Activation;
 }

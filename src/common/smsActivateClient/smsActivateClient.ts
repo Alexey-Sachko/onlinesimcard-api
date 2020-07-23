@@ -87,9 +87,17 @@ export class SmsActivateClient {
     return res.data;
   }
 
-  async getNumberStub(serviceCode: string, countryCode: string) {
-    return { operId: '213131313', number: '+79089248826' };
-  }
+  // async getNumberStub(serviceCode: string, countryCode: string) {
+  //   const activation = {
+  //     operId: uuid(),
+  //     number: '+7' + Math.round(Math.random() * 10000000),
+  //     status: SmsActivationStatus.STATUS_OK,
+  //     code: 'asdasdad',
+  //   };
+
+  //   activationsSTUB[activation.operId] = activation;
+  //   return activation;
+  // }
 
   async getStatus(operId: string) {
     const res = await this.callApi<string>('getStatus', { id: operId });
@@ -110,11 +118,28 @@ export class SmsActivateClient {
     return { status, code: value };
   }
 
-  async getStatusStub(operId: string) {
-    return {
-      status: SmsActivationStatus.STATUS_WAIT_CODE,
-      code: '',
-      lastCode: '',
-    };
+  async cancelActivation(operId: string) {
+    const res = await this.callApi<string>('setStatus', {
+      id: operId,
+      status: 8,
+    });
+    const { name: status, value = '' } = this.parseTextData(res.data);
+    if (status !== SmsActivationStatus.ACCESS_CANCEL) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+    return true;
+  }
+
+  async finishActivation(operId: string) {
+    const res = await this.callApi<string>('setStatus', {
+      id: operId,
+      status: 6,
+    });
+
+    const { name: status, value = '' } = this.parseTextData(res.data);
+    if (status !== SmsActivationStatus.ACCESS_CANCEL) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+    return true;
   }
 }

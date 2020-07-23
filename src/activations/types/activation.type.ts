@@ -1,5 +1,6 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { ActivationStatus } from './activation-status.enum';
+import { ActivationCodeType } from './activation-code.type';
 
 @ObjectType()
 export class ActivationType {
@@ -20,4 +21,7 @@ export class ActivationType {
 
   @Field()
   sourceActivationId: string;
+
+  @Field(type => [ActivationCodeType])
+  activationCodes: ActivationCodeType[];
 }
