@@ -109,6 +109,13 @@ export class UsersService {
     return this.rolesRepository.find();
   }
 
+  async getUsers(): Promise<User[]> {
+    const users = await this.usersRepository.find({
+      relations: ['role'],
+    });
+    return users;
+  }
+
   async createRole(createRoleDto: CreateRoleDto) {
     const { name, permissions } = createRoleDto;
     const role = new Role();
@@ -117,16 +124,27 @@ export class UsersService {
     await role.save();
   }
 
-  async setRole(user: User, roleName: string): Promise<ErrorType[] | null> {
+  async setRole(userId: string, roleName: string): Promise<ErrorType[] | null> {
+    const errors: ErrorType[] = [];
+    const userFound = await this.usersRepository.findOne(userId);
+    if (!userFound) {
+      errors.push(createError('userId', 'Пользователь не найден'));
+    }
+
     const roleFound = await this.rolesRepository.findOne({
       where: { name: roleName },
     });
     if (!roleFound) {
-      return [createError('roleName', `Нет роли с roleName: '${roleName}'`)];
+      errors.push(
+        createError('roleName', `Нет роли с roleName: '${roleName}'`),
+      );
+    }
+    if (errors.length > 0) {
+      return errors;
     }
 
-    user.role = roleFound;
-    await user.save();
+    userFound.role = roleFound;
+    await userFound.save();
     return null;
   }
 
