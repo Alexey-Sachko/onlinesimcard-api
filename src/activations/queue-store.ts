@@ -1,3 +1,6 @@
+import { timer, from } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+
 type Operation = () => Promise<void>;
 
 export class QueueStore {
@@ -10,20 +13,30 @@ export class QueueStore {
 
   // TODO сделать выключение интервала, если задачи кончились и включать как только появляются
   private _startTaskManagement() {
-    // Запускаем скрипт по интервалу
-    setInterval(async () => {
-      if (!this._inProgress && this._operations.length > 0) {
-        console.log('task started, oper length:', this._operations.length);
-        this._inProgressCount += 1;
-        const oper = this._operations.shift();
-        try {
-          await oper();
-        } catch (error) {
-          console.error(`[QueueStore]: Ошибка выполнения операции`, error);
-        }
-        this._inProgressCount -= 1;
-      }
-    }, 100);
+    timer(0, 100).subscribe(() => {
+      this._runAvailableTask();
+    });
+  }
+
+  private _runAvailableTask() {
+    console.log('_runAvailableTask', this._operations.length);
+
+    if (!this._inProgress && this._operations.length > 0) {
+      console.log('task started, oper length:', this._operations.length);
+      this._inProgressCount += 1;
+      const oper = this._operations.shift();
+      from(oper())
+        .pipe(
+          catchError(err => {
+            console.error(`[QueueStore]: Ошибка выполнения операции`, err);
+            return err;
+          }),
+          tap(() => {
+            this._inProgressCount -= 1;
+          }),
+        )
+        .subscribe();
+    }
   }
 
   push(oper: Operation) {

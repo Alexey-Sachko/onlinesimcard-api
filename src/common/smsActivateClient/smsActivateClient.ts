@@ -1,4 +1,6 @@
 import Axios, { AxiosInstance } from 'axios';
+import { from } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
 import { GetAvailableNumbersRO, GetPricesRO } from './smsActivateClient.types';
@@ -116,6 +118,30 @@ export class SmsActivateClient {
     }
 
     return { status, code: value };
+  }
+
+  getStatusObs(operId: string) {
+    return from(
+      this.callApi<string>('getStatus', { id: operId }),
+    ).pipe(
+      map(res => ({ ...this.parseTextData(res.data), res })),
+      tap(({ name, res }) => {
+        if (
+          !Object.values(SmsActivationStatus).includes(
+            name as SmsActivationStatus,
+          )
+        ) {
+          throw new Error(`Ошибка sms-activate: '${res.data}'`);
+        }
+      }),
+      map(({ name, value }) => {
+        if (name === SmsActivationStatus.STATUS_WAIT_RETRY) {
+          return { name, lastCode: value };
+        }
+
+        return { name, code: value };
+      }),
+    );
   }
 
   async cancelActivation(operId: string) {
