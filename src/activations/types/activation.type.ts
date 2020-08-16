@@ -22,6 +22,6 @@ export class ActivationType {
   @Field()
   sourceActivationId: string;
 
-  @Field(type => [ActivationCodeType])
+  @Field(type => [ActivationCodeType], { nullable: true })
   activationCodes: ActivationCodeType[];
 }

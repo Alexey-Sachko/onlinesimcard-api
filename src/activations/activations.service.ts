@@ -28,7 +28,7 @@ export class ActivationsService {
     private readonly _smsActivateClient: SmsActivateClient,
   ) {
     this._queue = new QueueStore();
-    this._startActualizer();
+    // this._startActualizer();
   }
 
   // При закпуске сервера запрашиваем активные активации и запускаем опрос источника
