@@ -26,12 +26,6 @@ import { PermissionsGuard } from './permissions.guard';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Подтвердить учетную запись' })
-  @Get('/verify/:token')
-  async verifyUser(@Param('token') token: string) {
-    return this.usersService.verifyUser(token);
-  }
-
   @ApiOperation({ summary: 'Удалить пользователя' })
   @ApiBearerAuth()
   @HasPermissions(Permissions.WriteUsers)

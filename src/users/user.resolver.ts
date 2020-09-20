@@ -27,6 +27,13 @@ export class UserResolver {
     return this._usersService.createUser(userSignupDto);
   }
 
+  @Mutation(returns => ErrorType, { nullable: true })
+  async verifyUser(
+    @Args('verifyToken') verifyToken: string,
+  ): Promise<ErrorType | null> {
+    return this._usersService.verifyUser(verifyToken);
+  }
+
   @UseGuards(GqlAuthGuard(Permissions.WriteUsers))
   @Mutation(returns => ErrorType, { nullable: true })
   async deleteUser(

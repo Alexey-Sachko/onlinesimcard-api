@@ -221,7 +221,7 @@ export class UsersService {
     return null;
   }
 
-  async verifyUser(tokenString: string) {
+  async verifyUser(tokenString: string): Promise<ErrorType | null> {
     const token = await this.verifyTokensRepository.findOne(
       {
         token: tokenString,
@@ -229,10 +229,13 @@ export class UsersService {
       { relations: ['user'] },
     );
     if (!token) {
-      throw new NotFoundException('Ссылка недействительна');
+      return createError('verifyToken', 'Ссылка недействительна');
     }
     if (!token.user) {
-      throw new NotFoundException('Учетная запись не существует');
+      return createError(
+        'email',
+        'Учетная запись не существует или была удалена администратором за нарушение правил',
+      );
     }
     token.user.verified = true;
     await token.user.save();
@@ -240,6 +243,8 @@ export class UsersService {
     if (!rows.affected) {
       throw new InternalServerErrorException();
     }
+
+    return null;
   }
 
   async validatePassword(authCredentialsDto: AuthCredentialsDto) {
