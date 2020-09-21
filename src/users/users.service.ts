@@ -23,6 +23,7 @@ import { createError } from 'src/common/errors/create-error';
 import { AuthProviderType } from './auth-provider-type.enum';
 import { AuthProvider } from './auth-provider.entity';
 import { ErrorType } from 'src/common/errors/error.type';
+import { mailConfig } from 'src/config/mail';
 
 dotenv.config();
 
@@ -285,10 +286,10 @@ export class UsersService {
     return this.emailClient.sendEmail({
       to,
       from: {
-        email: 'info@onlinesimcard.ru',
-        name: 'Onlinesimcard.ru',
+        email: mailConfig.mailFromAdress,
+        name: mailConfig.mailFromName,
       },
-      subject: 'Добро пожаловть в Onlinesimcard! Подтвердите свой Email',
+      subject: 'Добро пожаловть в Virtualnum! Подтвердите свой Email',
       html: `<p>Здравствуйте</p>
       <p>Для завершения регистрации перейдите по ссылке - <a href="${link}">${link}</a></p>`,
     });
