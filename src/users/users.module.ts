@@ -15,6 +15,7 @@ import { UserResolver } from './user.resolver';
 import { AuthController } from './auth.controller';
 import { VkAuthService } from './vk/vk-auth.service';
 import { AuthProvider } from './auth-provider.entity';
+import { GoogleAuthService } from './google/google-auth.service';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AuthProvider } from './auth-provider.entity';
     AuthResolver,
     UserResolver,
     VkAuthService,
+    GoogleAuthService,
   ],
   exports: [UsersService, JwtModule],
 })
