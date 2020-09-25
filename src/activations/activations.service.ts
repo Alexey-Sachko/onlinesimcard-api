@@ -204,8 +204,6 @@ export class ActivationsService {
     activation.expiresAt = expiresAt;
 
     await activation.save();
-    this._actualizeActivationStatus(apiOper.operId, true);
-    // - Create transaction
     return null;
   }
 
