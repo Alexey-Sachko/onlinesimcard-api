@@ -1,4 +1,3 @@
-import { CommandBus } from '@nestjs/cqrs';
 import { UseGuards } from '@nestjs/common';
 import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
 import { ActivationsService } from './activations.service';
@@ -8,14 +7,10 @@ import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { GetGqlUser } from 'src/users/get-user.decorator';
 import { ErrorType } from 'src/common/errors/error.type';
 import { ActivationType } from './types/activation.type';
-import { CreateActivationCommand } from './commands/impl/create-activation.command';
 
 @Resolver('Activations')
 export class ActivationsResolver {
-  constructor(
-    private readonly _acivationsService: ActivationsService,
-    private readonly _commandBus: CommandBus,
-  ) {}
+  constructor(private readonly _acivationsService: ActivationsService) {}
 
   @UseGuards(GqlAuthGuard())
   @Query(returns => [ActivationType])
@@ -73,10 +68,9 @@ export class ActivationsResolver {
     @Args('createActivationInput')
     createActivationInput: CreateActivationInput,
   ) {
-    const x = await this._commandBus.execute(
-      new CreateActivationCommand(user, createActivationInput),
+    return this._acivationsService.createActivation(
+      user,
+      createActivationInput,
     );
-
-    return x;
   }
 }

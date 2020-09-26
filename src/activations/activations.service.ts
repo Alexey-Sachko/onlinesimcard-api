@@ -11,13 +11,10 @@ import { createError } from 'src/common/errors/create-error';
 import { ErrorType } from 'src/common/errors/error.type';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
 import { ActivationCode } from './entity/activation-code.entity';
-import { QueueStore } from './queue-store';
 import { CheckingService } from './checking/checking.service';
 
 @Injectable()
 export class ActivationsService {
-  private readonly _queue: QueueStore;
-
   constructor(
     @InjectRepository(Activation)
     private readonly _activationRepository: Repository<Activation>,
@@ -28,33 +25,8 @@ export class ActivationsService {
     private readonly _smsActivateClient: SmsActivateClient,
     private readonly _checkingService: CheckingService,
   ) {
-    // this._queue = new QueueStore();
-    // this._startActualizer();
-    this._checkingService.actualizeActivations();
+    this._checkingService.startChecker();
   }
-
-  // При закпуске сервера запрашиваем активные активации и запускаем опрос источника
-  // private async _startActualizer() {
-  //   const activeActivations = await this._activationRepository.find({
-  //     where: {
-  //       status: Not(
-  //         In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]),
-  //       ),
-  //     },
-  //   });
-
-  //   if (!activeActivations) {
-  //     return;
-  //   }
-
-  //   // Стартуем очередь
-  //   activeActivations.forEach(({ sourceActivationId }) => {
-  //     this._queue.push(async () => {
-  //       await this._actualizeActivationStatus(sourceActivationId, true);
-  //     });
-  //   });
-  //   this._queue.start();
-  // }
 
   async myCurrentActivations(user: User): Promise<Activation[]> {
     const activations = await this._activationRepository.find({

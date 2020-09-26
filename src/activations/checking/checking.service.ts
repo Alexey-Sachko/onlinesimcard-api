@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { from, timer } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
+
 import { SmsActivationStatus } from 'src/common/smsActivateClient/sms-activation-status.enum';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
 import { ActivationCode } from '../entity/activation-code.entity';
-
 import { Activation } from '../entity/activation.entity';
 import { ActivationStatus } from '../types/activation-status.enum';
 
@@ -33,14 +35,20 @@ export class CheckingService {
       },
     });
 
-    currentActivations.forEach(activation =>
-      this.checkOneActivation(activation),
+    await Promise.all(
+      currentActivations.map(activation => this.checkOneActivation(activation)),
     );
   }
 
-  // async startChecker() {
-  //   interval(1000).pipe();
-  // }
+  async startChecker() {
+    const stopChecker = timer(0, 1500)
+      .pipe(concatMap(() => from(this.actualizeActivations())))
+      .subscribe(() => {
+        // stub
+      });
+
+    return stopChecker;
+  }
 
   private async checkOneActivation(activation: Activation) {
     const apiActivation = await this._smsActivateClient.getStatus(
