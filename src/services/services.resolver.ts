@@ -18,6 +18,7 @@ import { Service } from './service.entity';
 import { CountryApiType } from './types/country-api.type';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
+import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
 
 @Resolver(of => ServiceType)
 export class ServicesResolver {
@@ -48,6 +49,21 @@ export class ServicesResolver {
       return errors;
     }
     return this._servicesService.createOrUpdateService(createServiceDto);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.WriteServices))
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async saveServicesWithPrices(
+    @Args('servicesWithPrices', { type: () => [CreateServiceWithPricesDto] })
+    servicesWithPrices: CreateServiceWithPricesDto[],
+  ) {
+    // const errors = await validate(createServiceDto, CreateServiceDto);
+    // if (errors) {
+    //   return errors;
+    // }
+    return this._servicesService.createOrUpdateServicesWithPrices(
+      servicesWithPrices,
+    );
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))

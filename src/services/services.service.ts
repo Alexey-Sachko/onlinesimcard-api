@@ -10,6 +10,8 @@ import { ErrorType } from 'src/common/errors/error.type';
 import { CountryApiType } from './types/country-api.type';
 import { countriesDictionary } from './data/countries-dictionary';
 import { createError } from 'src/common/errors/create-error';
+import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
+import { error } from 'console';
 
 @Injectable()
 export class ServicesService {
@@ -49,6 +51,39 @@ export class ServicesService {
     service.code = code;
     service.name = name;
     await service.save();
+    return null;
+  }
+
+  async createOrUpdateServicesWithPrices(
+    servicesWithPrices: CreateServiceWithPricesDto[],
+  ) {
+    const promises = servicesWithPrices.map(async service => {
+      const errors = await this.createOrUpdateService(service);
+      const pricesErrors = await Promise.all(
+        service.prices.map(async price =>
+          this.createOrUpdatePrice({ ...price, serviceCode: service.code }),
+        ),
+      );
+      const flattenPriceErrors = pricesErrors.reduce((acc, _errors) => {
+        _errors?.forEach(err => acc.push(err));
+        return acc;
+      }, []);
+
+      const resultErrors = [...(errors || []), ...flattenPriceErrors];
+
+      if (resultErrors.length) {
+        return resultErrors;
+      }
+
+      return null;
+    });
+
+    const allErrors = (await Promise.all(promises)).filter(Boolean);
+
+    if (allErrors.length) {
+      return allErrors;
+    }
+
     return null;
   }
 
