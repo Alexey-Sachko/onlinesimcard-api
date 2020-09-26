@@ -20,7 +20,6 @@ export class ActivationsService {
     private readonly _activationRepository: Repository<Activation>,
 
     @InjectRepository(ActivationCode)
-    private readonly _activationCodeRepository: Repository<ActivationCode>,
     private readonly _sercvicesService: ServicesService,
     private readonly _smsActivateClient: SmsActivateClient,
     private readonly _checkingService: CheckingService,
@@ -39,23 +38,6 @@ export class ActivationsService {
       relations: ['activationCodes'],
     });
     return activations;
-  }
-
-  private async _createIfNotExistsActivationCode(
-    codeValue: string,
-    activation: Activation,
-  ) {
-    const actCodeExists = await this._activationCodeRepository.findOne({
-      where: { activationId: activation.id, code: codeValue },
-    });
-    if (!actCodeExists) {
-      const actCode = new ActivationCode();
-      actCode.code = codeValue;
-      actCode.activation = activation;
-      await actCode.save();
-      return actCode;
-    }
-    return actCodeExists;
   }
 
   async createActivation(
