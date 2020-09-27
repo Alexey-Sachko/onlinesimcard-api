@@ -19,7 +19,7 @@ export class TransformInterceptor<T>
     next: CallHandler,
   ): Observable<Response<T>> {
     const req = context.switchToHttp().getRequest();
-    if (req) {
+    if (req && req.path !== '/api/v1/status') {
       return next.handle().pipe(map(data => ({ data })));
     }
 

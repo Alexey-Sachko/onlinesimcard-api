@@ -7,6 +7,7 @@ import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { GetGqlUser } from 'src/users/get-user.decorator';
 import { ErrorType } from 'src/common/errors/error.type';
 import { ActivationType } from './types/activation.type';
+import { Permissions } from 'src/users/permissions.enum';
 
 @Resolver('Activations')
 export class ActivationsResolver {
@@ -19,6 +20,36 @@ export class ActivationsResolver {
     user: User,
   ) {
     return this._acivationsService.myCurrentActivations(user);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.WriteStubs))
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async create100StubActivations(
+    @GetGqlUser()
+    user: User,
+
+    @Args('createActivationInput')
+    createActivationInput: CreateActivationInput,
+  ) {
+    return this._acivationsService.create100StubActivations(
+      user,
+      createActivationInput,
+    );
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.WriteStubs))
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async createStubActivation(
+    @GetGqlUser()
+    user: User,
+
+    @Args('createActivationInput')
+    createActivationInput: CreateActivationInput,
+  ) {
+    return this._acivationsService.createStubActivation(
+      user,
+      createActivationInput,
+    );
   }
 
   @UseGuards(GqlAuthGuard())

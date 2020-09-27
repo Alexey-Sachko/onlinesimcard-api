@@ -27,7 +27,8 @@ export class SmsActivateClient {
         api_key: process.env.SMS_ACTIVATE_API_TOKEN,
         ...(query || {}),
       },
-    });
+      timeout: 30000,
+    }).catch(() => process.exit(0));
   }
 
   private parseTextData(data: string) {
@@ -101,7 +102,12 @@ export class SmsActivateClient {
   //   return activation;
   // }
 
+  countRequests = 0;
+
   async getStatus(operId: string) {
+    this.countRequests++;
+    console.log('start getStatus', this.countRequests);
+
     const res = await this.callApi<string>('getStatus', { id: operId });
     const { name: status, value = '' } = this.parseTextData(res.data);
 
@@ -116,6 +122,8 @@ export class SmsActivateClient {
     if (status === SmsActivationStatus.STATUS_WAIT_RETRY) {
       return { status, lastCode: value };
     }
+
+    console.log('end getStatus', this.countRequests);
 
     return { status, code: value };
   }

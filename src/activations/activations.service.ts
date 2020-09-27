@@ -38,6 +38,62 @@ export class ActivationsService {
     return activations;
   }
 
+  async create100StubActivations(
+    user: User,
+    createActivationInput: CreateActivationInput,
+  ) {
+    await Promise.all(
+      Array(100)
+        .fill('')
+        .map(() => this.createStubActivation(user, createActivationInput)),
+    );
+  }
+
+  async createStubActivation(
+    user: User,
+    createActivationInput: CreateActivationInput,
+  ): Promise<ErrorType[] | null> {
+    const { countryCode, serviceCode } = createActivationInput;
+    // - Check price entity exists
+    const priceFound = await this._sercvicesService.getPrice(
+      serviceCode,
+      countryCode,
+    );
+
+    if (!priceFound) {
+      return [
+        createError('countryCode', 'Не найдено price'),
+        createError('serviceCode', 'Не найдено price'),
+      ];
+    }
+
+    // - Check balance amount for buy
+    // if (user.balanceAmount < priceFound.amount) {
+    //   return [createError('balanceAmount', 'Недостаточно средств')];
+    // }
+
+    const apiOper = {
+      number: Math.round(Math.random() * 10000000).toString(),
+      operId: Math.round(Math.random() * 100000).toString(),
+    };
+    // console.log('apiOper', apiOper);
+
+    const expiresAt = moment()
+      .add('minutes', 20)
+      .toDate();
+
+    const activation = new Activation();
+    activation.price = priceFound;
+    activation.phoneNum = apiOper.number;
+    activation.sourceActivationId = apiOper.operId;
+    activation.cost = priceFound.amount;
+    activation.user = user;
+    activation.expiresAt = expiresAt;
+
+    await activation.save();
+    return null;
+  }
+
   async createActivation(
     user: User,
     createActivationInput: CreateActivationInput,
