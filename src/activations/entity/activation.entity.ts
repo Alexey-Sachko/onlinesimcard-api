@@ -10,6 +10,7 @@ import { User } from 'src/users/user.entity';
 import { PriceEntity } from 'src/services/price.entity';
 import { ActivationStatus } from '../types/activation-status.enum';
 import { ActivationCode } from './activation-code.entity';
+import { Transaction } from 'src/transactions/transaction.entity';
 
 @Entity()
 export class Activation extends DefaultEntity {
@@ -44,11 +45,11 @@ export class Activation extends DefaultEntity {
   )
   user: User;
 
-  // @ManyToOne(
-  //   type => Transaction,
-  //   transaction => transaction.id,
-  // )
-  // transaction: Transaction;
+  @ManyToOne(
+    type => Transaction,
+    transaction => transaction.id,
+  )
+  transaction: Transaction;
 
   @ManyToOne(
     type => PriceEntity,

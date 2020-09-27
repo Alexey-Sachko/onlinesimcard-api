@@ -11,6 +11,8 @@ import { createError } from 'src/common/errors/create-error';
 import { ErrorType } from 'src/common/errors/error.type';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
 import { CheckingService } from './checking/checking.service';
+import { TransactionsService } from 'src/transactions/transactions.service';
+import { TransactionType } from 'src/transactions/transaction-type.enum';
 
 @Injectable()
 export class ActivationsService {
@@ -21,6 +23,7 @@ export class ActivationsService {
     private readonly _sercvicesService: ServicesService,
     private readonly _smsActivateClient: SmsActivateClient,
     private readonly _checkingService: CheckingService,
+    private readonly _transactionsService: TransactionsService,
   ) {
     this._checkingService.startChecker();
   }
@@ -112,10 +115,19 @@ export class ActivationsService {
       ];
     }
 
+    const userBalance = await this._transactionsService.getUserBalance(user);
     // - Check balance amount for buy
-    // if (user.balanceAmount < priceFound.amount) {
-    //   return [createError('balanceAmount', 'Недостаточно средств')];
-    // }
+    if (userBalance < priceFound.amount) {
+      return [createError('balanceAmount', 'Недостаточно средств')];
+    }
+
+    const transaction = await this._transactionsService.createTransaction(
+      {
+        amount: -priceFound.amount,
+        type: TransactionType.Buy,
+      },
+      user,
+    );
 
     const apiOper = await this._smsActivateClient.getNumber(
       serviceCode,
@@ -134,6 +146,7 @@ export class ActivationsService {
     activation.cost = priceFound.amount;
     activation.user = user;
     activation.expiresAt = expiresAt;
+    activation.transaction = transaction;
 
     await activation.save();
     return null;

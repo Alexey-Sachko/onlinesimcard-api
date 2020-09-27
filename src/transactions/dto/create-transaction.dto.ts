@@ -1,6 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { Field, InputType } from '@nestjs/graphql';
+import { TransactionType } from '../transaction-type.enum';
 
+@InputType()
 export class CreateTransactionDto {
-  @ApiProperty()
+  @Field()
   amount: number;
+
+  @Field(type => TransactionType)
+  type: TransactionType;
 }

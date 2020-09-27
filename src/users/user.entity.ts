@@ -16,9 +16,6 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ default: 0 })
-  balanceAmount: number;
-
   @Column({ nullable: true })
   fistName?: string;
 

@@ -8,12 +8,14 @@ import { UsersModule } from 'src/users/users.module';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
 import { ActivationCode } from './entity/activation-code.entity';
 import { CheckingService } from './checking/checking.service';
+import { TransactionsModule } from 'src/transactions/transactions.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Activation, ActivationCode]),
     ServicesModule,
     UsersModule,
+    TransactionsModule,
   ],
   providers: [
     ActivationsResolver,

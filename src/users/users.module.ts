@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
@@ -15,6 +15,7 @@ import { UserResolver } from './user.resolver';
 import { AuthController } from './auth.controller';
 import { VkAuthService } from './vk/vk-auth.service';
 import { AuthProvider } from './auth-provider.entity';
+import { TransactionsModule } from 'src/transactions/transactions.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AuthProvider } from './auth-provider.entity';
         expiresIn: process.env.JWT_EXPIRES_IN,
       },
     }),
+    forwardRef(() => TransactionsModule),
   ],
   controllers: [UsersController, AuthController],
   providers: [

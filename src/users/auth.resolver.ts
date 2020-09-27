@@ -11,12 +11,14 @@ import { User } from './user.entity';
 import { GetGqlUser } from './get-user.decorator';
 import { GqlAuthGuard } from './gql-auth.guard';
 import { MeResponse } from './types/me-response.type';
+import { TransactionsService } from 'src/transactions/transactions.service';
 
 @Resolver('Auth')
 export class AuthResolver {
   constructor(
     private readonly _authService: AuthService,
     private readonly _usersService: UsersService,
+    private readonly _transactionsService: TransactionsService,
   ) {}
 
   @Query(returns => MeResponse)
@@ -26,6 +28,7 @@ export class AuthResolver {
     user: User,
   ): Promise<MeResponse> {
     const role = await this._usersService.getUserRole(user);
+    const balanceAmount = await this._transactionsService.getUserBalance(user);
 
     return {
       id: user.id,
@@ -33,7 +36,7 @@ export class AuthResolver {
       permissions: role?.permissions,
       firstName: user.fistName,
       lastName: user.lastName,
-      balanceAmount: user.balanceAmount,
+      balanceAmount: balanceAmount,
     };
   }
 

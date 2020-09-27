@@ -12,14 +12,7 @@ export class TransactionsService {
     private transactionRepository: Repository<Transaction>,
   ) {}
 
-  async getTransactions() {
-    return this.transactionRepository.find();
-  }
-
-  async createTransaction(
-    createTransactionDto: CreateTransactionDto,
-    user: User,
-  ) {
+  private async _getLastUserTransaction(user: User) {
     const [lastTransaction] = await this.transactionRepository.find({
       where: {
         userId: user.id,
@@ -27,12 +20,29 @@ export class TransactionsService {
       take: 1,
       order: { createdAt: 'DESC' },
     });
+    return lastTransaction;
+  }
+
+  async getTransactions() {
+    return this.transactionRepository.find();
+  }
+
+  async getUserBalance(user: User) {
+    const lastTransaction = await this._getLastUserTransaction(user);
+    return lastTransaction.balanceBefore + lastTransaction.amount;
+  }
+
+  async createTransaction(
+    createTransactionDto: CreateTransactionDto,
+    user: User,
+  ) {
+    const lastTransaction = await this._getLastUserTransaction(user);
     let lastBalance = 0;
     if (lastTransaction) {
       lastBalance = lastTransaction.balanceBefore + lastTransaction.amount; // TODO вынести
     }
 
-    const { amount } = createTransactionDto;
+    const { amount, type } = createTransactionDto;
     const totalBalance = lastBalance + amount;
 
     if (totalBalance < 0) {
@@ -43,9 +53,9 @@ export class TransactionsService {
     transaction.user = user;
     transaction.amount = amount;
     transaction.balanceBefore = lastBalance;
+    transaction.type = type;
 
     await transaction.save();
-    delete transaction.user;
-    return transaction;
+    return null;
   }
 }
