@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from, timer } from 'rxjs';
-import { concatMap } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 import { SmsActivationStatus } from 'src/common/smsActivateClient/sms-activation-status.enum';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
@@ -12,6 +11,8 @@ import { ActivationStatus } from '../types/activation-status.enum';
 
 @Injectable()
 export class CheckingService {
+  private readonly _subject = new BehaviorSubject('');
+
   constructor(
     @InjectRepository(Activation)
     private readonly _activationRepository: Repository<Activation>,
@@ -20,17 +21,13 @@ export class CheckingService {
 
     @InjectRepository(ActivationCode)
     private readonly _activationCodeRepository: Repository<ActivationCode>,
-  ) {
-    Activation.subscibeOnSave(() => {
-      this.actualizeActivations();
-    });
-  }
+  ) {}
 
   async actualizeActivations() {
     const currentActivations = await this._activationRepository.find({
       where: {
         status: Not(
-          In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]),
+          In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]), // TODO убрать из выборки ERROR статус
         ),
       },
     });
@@ -40,21 +37,21 @@ export class CheckingService {
     );
   }
 
-  async startChecker() {
-    const stopChecker = timer(0, 1500)
-      .pipe(concatMap(() => from(this.actualizeActivations())))
-      .subscribe(() => {
-        // stub
-      });
+  private async _runCheck() {
+    await new Promise(res => setTimeout(res, 2000));
+    await this.actualizeActivations();
+    this._subject.next('');
+  }
 
-    return stopChecker;
+  async startChecker() {
+    this._subject.subscribe(() => this._runCheck());
   }
 
   private async checkOneActivation(activation: Activation) {
     const apiActivation = await this._smsActivateClient.getStatus(
       activation.sourceActivationId,
     );
-    switch (status) {
+    switch (apiActivation.status) {
       case SmsActivationStatus.STATUS_CANCEL: {
         if (new Date(activation.expiresAt) <= new Date()) {
           activation.status = ActivationStatus.FINISHED;
@@ -90,11 +87,19 @@ export class CheckingService {
         await activation.save();
         break;
       }
+      case SmsActivationStatus.WRONG_ACTIVATION_ID: {
+        activation.status = ActivationStatus.ERROR;
+        console.error(
+          `[ActivationsService._actualizeActivationStatus()] status: ${apiActivation.status}`,
+        );
+        await activation.save();
+        break;
+      }
       default:
         activation.status = ActivationStatus.ERROR;
         await activation.save();
-        throw new Error(
-          `[ActivationsService._actualizeActivationStatus()] Не обработанный case status: ${status}`,
+        console.error(
+          `[ActivationsService._actualizeActivationStatus()] Не обработанный case status: ${apiActivation.status}`,
         );
     }
   }

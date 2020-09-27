@@ -10,7 +10,6 @@ import { ServicesService } from 'src/services/services.service';
 import { createError } from 'src/common/errors/create-error';
 import { ErrorType } from 'src/common/errors/error.type';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
-import { ActivationCode } from './entity/activation-code.entity';
 import { CheckingService } from './checking/checking.service';
 
 @Injectable()
@@ -19,7 +18,6 @@ export class ActivationsService {
     @InjectRepository(Activation)
     private readonly _activationRepository: Repository<Activation>,
 
-    @InjectRepository(ActivationCode)
     private readonly _sercvicesService: ServicesService,
     private readonly _smsActivateClient: SmsActivateClient,
     private readonly _checkingService: CheckingService,
