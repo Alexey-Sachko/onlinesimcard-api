@@ -27,7 +27,11 @@ export class CheckingService {
     const currentActivations = await this._activationRepository.find({
       where: {
         status: Not(
-          In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]), // TODO убрать из выборки ERROR статус
+          In([
+            ActivationStatus.FINISHED,
+            ActivationStatus.CANCELLED,
+            ActivationStatus.ERROR,
+          ]),
         ),
       },
     });
