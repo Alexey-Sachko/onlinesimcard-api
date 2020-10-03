@@ -16,6 +16,7 @@ import { AuthController } from './auth.controller';
 import { VkAuthService } from './vk/vk-auth.service';
 import { AuthProvider } from './auth-provider.entity';
 import { TransactionsModule } from 'src/transactions/transactions.module';
+import { RefreshToken } from './refresh-token.entity';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TransactionsModule } from 'src/transactions/transactions.module';
       Role,
       PermToken,
       AuthProvider,
+      RefreshToken,
     ]),
     PassportModule.register({
       defaultStrategy: 'jwt-perm',

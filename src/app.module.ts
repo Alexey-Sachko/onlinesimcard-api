@@ -23,6 +23,7 @@ import { PriceEntity } from './services/price.entity';
 import { ActivationsModule } from './activations/activations.module';
 import { Activation } from './activations/entity/activation.entity';
 import { ActivationCode } from './activations/entity/activation-code.entity';
+import { RefreshToken } from './users/refresh-token.entity';
 
 dotenv.config();
 
@@ -77,6 +78,7 @@ dotenv.config();
         PriceEntity,
         Activation,
         ActivationCode,
+        RefreshToken,
       ],
       synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
     }),
