@@ -29,7 +29,11 @@ export class TransactionsService {
 
   async getUserBalance(user: User) {
     const lastTransaction = await this._getLastUserTransaction(user);
-    return lastTransaction.balanceBefore + lastTransaction.amount;
+    if (lastTransaction) {
+      return lastTransaction.balanceBefore + lastTransaction.amount;
+    }
+
+    return 0;
   }
 
   async createTransaction(
