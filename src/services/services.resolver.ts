@@ -30,13 +30,13 @@ export class ServicesResolver {
   }
 
   @Query(returns => [ServiceType])
-  async services() {
-    return this._servicesService.getServices();
+  async services(@Args('countryCode') countryCode: string) {
+    return this._servicesService.getServices(countryCode);
   }
 
-  @ResolveField(returns => [PriceType])
-  async prices(@Parent() service: Service) {
-    return this._servicesService.getPricesByService(service);
+  @Query(returns => [PriceType])
+  async prices() {
+    return this._servicesService.getPrices();
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))

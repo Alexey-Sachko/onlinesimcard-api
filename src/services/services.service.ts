@@ -11,7 +11,7 @@ import { CountryApiType } from './types/country-api.type';
 import { countriesDictionary } from './data/countries-dictionary';
 import { createError } from 'src/common/errors/create-error';
 import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
-import { error } from 'console';
+import { ServiceType } from './types/service.type';
 
 @Injectable()
 export class ServicesService {
@@ -25,8 +25,18 @@ export class ServicesService {
     private readonly _smsActivateClient: SmsActivateClient,
   ) {}
 
-  async getServices(): Promise<Service[]> {
-    return this._serviceRepository.find();
+  async getServices(countryCode: string): Promise<ServiceType[]> {
+    const prices = await this.getPrices(countryCode);
+
+    const services = await this._serviceRepository.find();
+    const filtered: ServiceType[] = services
+      .filter(service => prices.some(price => service.id === price.serviceId))
+      .map(service => ({
+        ...service,
+        priceAmount: prices.find(price => price.countryCode === countryCode)
+          ?.amount,
+      }));
+    return filtered;
   }
 
   async createOrUpdateService(
@@ -87,8 +97,10 @@ export class ServicesService {
     return null;
   }
 
-  async getPrices(): Promise<PriceEntity[]> {
-    return this._priceRepository.find();
+  async getPrices(countryCode?: string): Promise<PriceEntity[]> {
+    return this._priceRepository.find({
+      where: countryCode ? { countryCode } : undefined,
+    });
   }
 
   async getPricesByService(service: Service) {
@@ -106,6 +118,11 @@ export class ServicesService {
       },
       relations: ['service'],
     });
+  }
+
+  async getPriceAmount(serviceCode: string, countryCode: string) {
+    const price = await this.getPrice(serviceCode, countryCode);
+    return price?.amount;
   }
 
   async createOrUpdatePrice(
