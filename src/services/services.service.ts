@@ -35,8 +35,10 @@ export class ServicesService {
       .map(service => ({
         ...service,
         name: serviceDictionary[service.code],
-        priceAmount: prices.find(price => price.countryCode === countryCode)
-          ?.amount,
+        priceAmount: prices.find(
+          price =>
+            price.countryCode === countryCode && price.serviceId === service.id,
+        )?.amount,
       }));
     return filtered;
   }
@@ -115,9 +117,9 @@ export class ServicesService {
   }
 
   async getPrices(countryCode?: string): Promise<PriceEntity[]> {
-    return this._priceRepository.find({
-      where: countryCode ? { countryCode } : undefined,
-    });
+    return this._priceRepository.find(
+      countryCode ? { where: { countryCode } } : undefined,
+    );
   }
 
   async getPricesByService(service: Service) {
