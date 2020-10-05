@@ -43,6 +43,8 @@ export class ServicesService {
 
   async createOrUpdateService(
     createServiceDto: CreateServiceDto,
+    countryCode: string,
+    price: number,
   ): Promise<ErrorType[] | null> {
     const { code } = createServiceDto;
 
@@ -56,7 +58,14 @@ export class ServicesService {
 
     if (serviceExists) {
       await serviceExists.save();
-      return null;
+
+      const priceErrors = await this.createOrUpdatePrice({
+        serviceCode: serviceExists.code,
+        countryCode,
+        amount: price,
+      });
+
+      return priceErrors;
     }
 
     if (!(await this._smsActivateClient.hasService(code))) {
@@ -66,28 +75,28 @@ export class ServicesService {
     const service = new Service();
     service.code = code;
     await service.save();
-    return null;
+
+    const priceErrors = await this.createOrUpdatePrice({
+      serviceCode: service.code,
+      countryCode,
+      amount: price,
+    });
+
+    return priceErrors;
   }
 
   async createOrUpdateServicesWithPrices(
     servicesWithPrices: CreateServiceWithPricesDto[],
+    countryCode: string,
   ) {
     const promises = servicesWithPrices.map(async service => {
-      const errors = await this.createOrUpdateService(service);
-      const pricesErrors = await Promise.all(
-        service.prices.map(async price =>
-          this.createOrUpdatePrice({ ...price, serviceCode: service.code }),
-        ),
+      const errors = await this.createOrUpdateService(
+        service,
+        countryCode,
+        service.price,
       );
-      const flattenPriceErrors = pricesErrors.reduce((acc, _errors) => {
-        _errors?.forEach(err => acc.push(err));
-        return acc;
-      }, []);
-
-      const resultErrors = [...(errors || []), ...flattenPriceErrors];
-
-      if (resultErrors.length) {
-        return resultErrors;
+      if (errors) {
+        return errors;
       }
 
       return null;
@@ -96,7 +105,10 @@ export class ServicesService {
     const allErrors = (await Promise.all(promises)).filter(Boolean);
 
     if (allErrors.length) {
-      return allErrors;
+      return allErrors.reduce(
+        (acc, errors) => [...acc, ...errors],
+        [] as ErrorType[],
+      );
     }
 
     return null;

@@ -43,12 +43,18 @@ export class ServicesResolver {
   @Mutation(returns => [ErrorType], { nullable: true })
   async saveService(
     @Args('createServiceDto') createServiceDto: CreateServiceDto,
+    @Args('countryCode') countryCode: string,
+    @Args('price') price: number,
   ) {
     const errors = await validate(createServiceDto, CreateServiceDto);
     if (errors) {
       return errors;
     }
-    return this._servicesService.createOrUpdateService(createServiceDto);
+    return this._servicesService.createOrUpdateService(
+      createServiceDto,
+      countryCode,
+      price,
+    );
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))
@@ -56,13 +62,12 @@ export class ServicesResolver {
   async saveServicesWithPrices(
     @Args('servicesWithPrices', { type: () => [CreateServiceWithPricesDto] })
     servicesWithPrices: CreateServiceWithPricesDto[],
+
+    @Args('countryCode') countryCode: string,
   ) {
-    // const errors = await validate(createServiceDto, CreateServiceDto);
-    // if (errors) {
-    //   return errors;
-    // }
     return this._servicesService.createOrUpdateServicesWithPrices(
       servicesWithPrices,
+      countryCode,
     );
   }
 
