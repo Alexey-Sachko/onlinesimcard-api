@@ -12,6 +12,7 @@ import { countriesDictionary } from './data/countries-dictionary';
 import { createError } from 'src/common/errors/create-error';
 import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
 import { ServiceType } from './types/service.type';
+import { serviceDictionary } from './service-dictionary';
 
 @Injectable()
 export class ServicesService {
@@ -33,6 +34,7 @@ export class ServicesService {
       .filter(service => prices.some(price => service.id === price.serviceId))
       .map(service => ({
         ...service,
+        name: serviceDictionary[service.code],
         priceAmount: prices.find(price => price.countryCode === countryCode)
           ?.amount,
       }));
@@ -42,13 +44,17 @@ export class ServicesService {
   async createOrUpdateService(
     createServiceDto: CreateServiceDto,
   ): Promise<ErrorType[] | null> {
-    const { code, name } = createServiceDto;
+    const { code } = createServiceDto;
+
+    if (!serviceDictionary[code]) {
+      return [createError('code', `Нет такого сервиса '${code}' в словаре`)];
+    }
+
     const serviceExists = await this._serviceRepository.findOne({
       where: { code },
     });
 
     if (serviceExists) {
-      serviceExists.name = name;
       await serviceExists.save();
       return null;
     }
@@ -59,7 +65,6 @@ export class ServicesService {
 
     const service = new Service();
     service.code = code;
-    service.name = name;
     await service.save();
     return null;
   }

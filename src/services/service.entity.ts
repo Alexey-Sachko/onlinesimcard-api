@@ -8,7 +8,4 @@ export class Service extends DefaultEntity {
 
   @Column({ unique: true })
   code: string;
-
-  @Column()
-  name: string;
 }
