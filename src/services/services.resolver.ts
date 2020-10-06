@@ -1,11 +1,4 @@
-import {
-  Resolver,
-  Mutation,
-  Args,
-  Query,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -14,7 +7,6 @@ import { ErrorType } from 'src/common/errors/error.type';
 import { ServiceType } from './types/service.type';
 import { CreatePriceDto } from './dto/create-price.dto';
 import { PriceType } from './types/price.type';
-import { Service } from './service.entity';
 import { CountryApiType } from './types/country-api.type';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
@@ -55,6 +47,16 @@ export class ServicesResolver {
       countryCode,
       price,
     );
+  }
+
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async deleteService(@Args('code') code: string) {
+    return this._servicesService.deleteService(code);
+  }
+
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async restoreService(@Args('code') code: string) {
+    return this._servicesService.restoreService(code);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))

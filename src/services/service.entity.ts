@@ -1,4 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 import { DefaultEntity } from 'src/common/default-entity';
 
 @Entity()
@@ -8,4 +13,7 @@ export class Service extends DefaultEntity {
 
   @Column({ unique: true })
   code: string;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

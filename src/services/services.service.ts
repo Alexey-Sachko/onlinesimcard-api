@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Service } from './service.entity';
 import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
 import { PriceEntity } from './price.entity';
@@ -85,6 +85,46 @@ export class ServicesService {
     });
 
     return priceErrors;
+  }
+
+  async deleteService(code: string): Promise<ErrorType[] | null> {
+    const service = await this._serviceRepository.findOne({ code });
+    if (!service) {
+      return [createError('code', 'Нет сервиса с таким кодом')];
+    }
+
+    await this._priceRepository.softDelete({ serviceId: service.id });
+    await service.softRemove();
+
+    return null;
+  }
+
+  async restoreService(code: string): Promise<ErrorType[] | null> {
+    const service = await this._serviceRepository.findOne({
+      where: {
+        code,
+        deletedAt: Not(IsNull()),
+      },
+      withDeleted: true,
+    });
+
+    if (!service) {
+      return [createError('code', 'Нет удаленного сервиса с таким кодом')];
+    }
+
+    await service.recover();
+
+    const prices = await this._priceRepository.find({
+      where: {
+        deletedAt: Not(IsNull()),
+        serviceId: service.id,
+      },
+      withDeleted: true,
+    });
+
+    await Promise.all(prices.map(price => price.recover()));
+
+    return null;
   }
 
   async createOrUpdateServicesWithPrices(
