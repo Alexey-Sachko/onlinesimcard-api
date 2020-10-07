@@ -1,19 +1,24 @@
 before_script:
-  - apt-get update -qq
-  - apt-get install -qq git
-  # Setup SSH deploy keys
-  - 'which ssh-agent || ( apt-get install -qq openssh-client )'
+  # Гитлаб скачивает себе утилиту sshpass
+  - apt-get update -qq && apt-get install -y -qq sshpass
+  # Настраиваем SSH
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
   - eval $(ssh-agent -s)
-  - ssh-add <(echo "$SSH_PRIVATE_KEY")
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir -p ~/.ssh
-  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - chmod 700 ~/.ssh
+  - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
-deploy_staging:
-  type: deploy
-  environment:
-    name: staging
-    url: virtualnum.ru
+deploy:
+  stage: deploy
   script:
-    - ssh root@virtualnum.ru "cd /app/config && docker-compose pull && docker-compose up -d && exit"
+    # Используем утилиту sshpass для удаленного выполнения команд на VDS
+    - sshpass -V
+    - export SSHPASS=$USER_PASS
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru 'ls'
+  # # Копируем новые файлы
+  # - sshpass -e scp -o stricthostkeychecking=no -r . $USER@$HOST:$TARGET_DIR_ON_HOST
+  # # Перезапускаем сервис
+  # - sshpass -e ssh -o stricthostkeychecking=no $USER@$HOST systemctl restart $SERVICE_NAME
   only:
     - master
