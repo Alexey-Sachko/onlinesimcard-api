@@ -15,7 +15,7 @@ deploy:
     # Используем утилиту sshpass для удаленного выполнения команд на VDS
     - sshpass -V
     - export SSHPASS=$USER_PASS
-    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru 'ls'
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "cd /app/config && ls"
   # # Копируем новые файлы
   # - sshpass -e scp -o stricthostkeychecking=no -r . $USER@$HOST:$TARGET_DIR_ON_HOST
   # # Перезапускаем сервис
