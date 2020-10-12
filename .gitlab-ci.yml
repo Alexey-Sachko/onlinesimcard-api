@@ -34,7 +34,7 @@ deploy:
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker pull $CI_REGISTRY_IMAGE:latest"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker stop api"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker rm api"
-    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "echo $PWD"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "echo \$PWD"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker run -v $PWD/.env:/usr/bin/app/.env -p='4500:4500' -d --restart='unless-stopped' --name='api' --network='app_network' $CI_REGISTRY_IMAGE:latest"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker image prune"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker container prune"
