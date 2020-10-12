@@ -23,13 +23,22 @@ deploy:
     - chmod 700 ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
+    # print docker image
+    - echo $CI_REGISTRY_IMAGE
+
     # Используем утилиту sshpass для удаленного выполнения команд на VDS
     - sshpass -V
     - export SSHPASS=$USER_PASS
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD"
-    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker system prune --all --force"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker image prune"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker container prune"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "cd /app/config"
-    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker run -v $PWD/.env:/usr/bin/app/.env -p='4500:4500' -d --restart='unless-stopped' --name='api' --network='app_network' 23091996/onlinesim_api_klc4f9j40dfk4f8hdfk04fj"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker pull $CI_REGISTRY_IMAGE:latest"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker stop api"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker rm api"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker run -v $PWD/.env:/usr/bin/app/.env -p='4500:4500' -d --restart='unless-stopped' --name='api' --network='app_network' $CI_REGISTRY_IMAGE:latest"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker image prune"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker container prune"
   # # Копируем новые файлы
   # - sshpass -e scp -o stricthostkeychecking=no -r . $USER@$HOST:$TARGET_DIR_ON_HOST
   # # Перезапускаем сервис
