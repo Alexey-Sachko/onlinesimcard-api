@@ -31,8 +31,8 @@ deploy:
     - export SSHPASS=$USER_PASS
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker pull $CI_REGISTRY_IMAGE:latest"
-    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker stop api"
-    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker rm api"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker stop api || true"
+    - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker rm api || true"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker run -v /app/config/.env:/usr/bin/app/.env -p='4500:4500' -d --restart='unless-stopped' --name='api' --network='app_network' $CI_REGISTRY_IMAGE:latest"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker image prune"
     - sshpass -e ssh -o stricthostkeychecking=no root@virtualnum.ru "docker container prune"
