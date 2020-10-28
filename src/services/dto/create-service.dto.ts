@@ -6,8 +6,4 @@ export class CreateServiceDto {
   @MinLength(1)
   @Field()
   code: string;
-
-  @MinLength(1)
-  @Field()
-  name: string;
 }

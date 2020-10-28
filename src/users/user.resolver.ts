@@ -8,8 +8,7 @@ import { ErrorType } from 'src/common/errors/error.type';
 import { GqlAuthGuard } from './gql-auth.guard';
 import { Permissions } from './permissions.enum';
 import { RoleType } from './types/role.type';
-import { GetGqlUser } from './get-user.decorator';
-import { User } from './user.entity';
+import { UserType } from './types/user.type';
 
 @Resolver()
 export class UserResolver {
@@ -52,10 +51,16 @@ export class UserResolver {
   @UseGuards(GqlAuthGuard(Permissions.WriteUsers))
   @Mutation(returns => [ErrorType], { nullable: true })
   async setRole(
-    @GetGqlUser() user: User,
     @Args('roleName') roleName: string,
+    @Args('userId') userId: string,
   ): Promise<ErrorType[] | null> {
-    return this._usersService.setRole(user, roleName);
+    return this._usersService.setRole(userId, roleName);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.ReadUsers))
+  @Query(returns => [UserType])
+  async users(): Promise<UserType[]> {
+    return this._usersService.getUsers();
   }
 
   @Query(returns => [Permissions])

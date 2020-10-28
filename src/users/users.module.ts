@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
@@ -15,6 +15,8 @@ import { UserResolver } from './user.resolver';
 import { AuthController } from './auth.controller';
 import { VkAuthService } from './vk/vk-auth.service';
 import { AuthProvider } from './auth-provider.entity';
+import { RefreshToken } from './refresh-token.entity';
+import { BalanceModule } from 'src/balance/balance.module';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { AuthProvider } from './auth-provider.entity';
       Role,
       PermToken,
       AuthProvider,
+      RefreshToken,
     ]),
     PassportModule.register({
       defaultStrategy: 'jwt-perm',
@@ -34,6 +37,7 @@ import { AuthProvider } from './auth-provider.entity';
         expiresIn: process.env.JWT_EXPIRES_IN,
       },
     }),
+    forwardRef(() => BalanceModule),
   ],
   controllers: [UsersController, AuthController],
   providers: [
