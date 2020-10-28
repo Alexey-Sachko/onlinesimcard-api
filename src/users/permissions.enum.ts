@@ -10,6 +10,8 @@ export enum Permissions {
   ReadAdminPage = 'ReadAdminPage',
   WriteArticles = 'WriteArticles',
   WriteServices = 'WriteServices',
+  WriteStubs = 'WriteStubs',
+  MakeBonusMoney = 'MakeBonusMoney',
 }
 
 registerEnumType(Permissions, {

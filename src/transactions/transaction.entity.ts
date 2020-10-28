@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { TransactionType } from './transaction-type.enum';
 
 @Entity()
 export class Transaction extends BaseEntity {
@@ -18,6 +19,9 @@ export class Transaction extends BaseEntity {
 
   @Column({ type: 'double precision' })
   balanceBefore: number;
+
+  @Column({ type: 'varchar' })
+  type: TransactionType;
 
   @CreateDateColumn({
     type: 'timestamp',

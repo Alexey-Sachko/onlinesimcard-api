@@ -11,12 +11,14 @@ import { User } from './user.entity';
 import { GetGqlUser } from './get-user.decorator';
 import { GqlAuthGuard } from './gql-auth.guard';
 import { MeResponse } from './types/me-response.type';
+import { BalanceService } from 'src/balance/balance.service';
 
 @Resolver('Auth')
 export class AuthResolver {
   constructor(
     private readonly _authService: AuthService,
     private readonly _usersService: UsersService,
+    private readonly _balanceService: BalanceService,
   ) {}
 
   @Query(returns => MeResponse)
@@ -26,6 +28,9 @@ export class AuthResolver {
     user: User,
   ): Promise<MeResponse> {
     const role = await this._usersService.getUserRole(user);
+    const balanceAmount = await this._balanceService.getDisplayUserBalance(
+      user,
+    );
 
     return {
       id: user.id,
@@ -33,6 +38,7 @@ export class AuthResolver {
       permissions: role?.permissions,
       firstName: user.fistName,
       lastName: user.lastName,
+      balanceAmount,
     };
   }
 
@@ -61,8 +67,11 @@ export class AuthResolver {
   }
 
   @Mutation(returns => Boolean)
-  async logout(@Context() context: MyGqlContext) {
+  @UseGuards(GqlAuthGuard())
+  async logout(@Context() context: MyGqlContext, @GetGqlUser() user: User) {
+    await this._authService.logout(user.id);
     context.res.clearCookie('accessToken');
+    context.res.clearCookie('refreshToken');
     return true;
   }
 }

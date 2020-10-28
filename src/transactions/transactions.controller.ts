@@ -29,16 +29,4 @@ export class TransactionsController {
   async getTransactions() {
     return this.transactionsService.getTransactions();
   }
-
-  @ApiOperation({ summary: 'Добавить транзакцию' })
-  @Post()
-  async createTransaction(
-    @Body(ValidationPipe) createTransactionDto: CreateTransactionDto,
-    @GetUser() user: User,
-  ) {
-    return this.transactionsService.createTransaction(
-      createTransactionDto,
-      user,
-    );
-  }
 }

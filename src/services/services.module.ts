@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServicesService } from './services.service';
@@ -14,9 +14,10 @@ import { UsersModule } from 'src/users/users.module';
     PassportModule.register({
       defaultStrategy: 'jwt-perm',
     }),
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [],
+  exports: [ServicesService],
   providers: [ServicesService, SmsActivateClient, ServicesResolver],
 })
 export class ServicesModule {}

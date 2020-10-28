@@ -1,7 +1,10 @@
 import Axios, { AxiosInstance } from 'axios';
+import { from } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
 import { GetAvailableNumbersRO, GetPricesRO } from './smsActivateClient.types';
+import { SmsActivationStatus } from './sms-activation-status.enum';
 
 config();
 
@@ -13,6 +16,7 @@ export class SmsActivateClient {
     this.Api = Axios.create({
       baseURL: process.env.SMS_ACTIVATE_API_URL,
     });
+    // TODO logger
   }
 
   private callApi<ResponseType>(action: string, query?: Record<string, any>) {
@@ -23,7 +27,8 @@ export class SmsActivateClient {
         api_key: process.env.SMS_ACTIVATE_API_TOKEN,
         ...(query || {}),
       },
-    });
+      timeout: 30000,
+    }).catch(() => process.exit(0));
   }
 
   private parseTextData(data: string) {
@@ -65,9 +70,12 @@ export class SmsActivateClient {
     return value;
   }
 
-  async getNumber() {
-    const res = await this.callApi<string>('getNumber');
-    const { name, value } = this.parseTextData(res.data);
+  async getNumber(serviceCode: string, countryCode: string) {
+    const res = await this.callApi<string>('getNumber', {
+      service: serviceCode,
+      country: countryCode,
+    });
+    const { name, value = '' } = this.parseTextData(res.data);
 
     if (name !== 'ACCESS_NUMBER') {
       throw new Error(`Ошибка sms-activate: '${name}'`);
@@ -80,5 +88,92 @@ export class SmsActivateClient {
   async getPrices() {
     const res = await this.callApi<GetPricesRO>('getPrices');
     return res.data;
+  }
+
+  // async getNumberStub(serviceCode: string, countryCode: string) {
+  //   const activation = {
+  //     operId: uuid(),
+  //     number: '+7' + Math.round(Math.random() * 10000000),
+  //     status: SmsActivationStatus.STATUS_OK,
+  //     code: 'asdasdad',
+  //   };
+
+  //   activationsSTUB[activation.operId] = activation;
+  //   return activation;
+  // }
+
+  countRequests = 0;
+
+  async getStatus(operId: string) {
+    this.countRequests++;
+    console.log('start getStatus', this.countRequests);
+
+    const res = await this.callApi<string>('getStatus', { id: operId });
+    const { name: status, value = '' } = this.parseTextData(res.data);
+
+    if (
+      !Object.values(SmsActivationStatus).includes(
+        status as SmsActivationStatus,
+      )
+    ) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+
+    if (status === SmsActivationStatus.STATUS_WAIT_RETRY) {
+      return { status, lastCode: value };
+    }
+
+    console.log('end getStatus', this.countRequests);
+
+    return { status, code: value };
+  }
+
+  getStatusObs(operId: string) {
+    return from(
+      this.callApi<string>('getStatus', { id: operId }),
+    ).pipe(
+      map(res => ({ ...this.parseTextData(res.data), res })),
+      tap(({ name, res }) => {
+        if (
+          !Object.values(SmsActivationStatus).includes(
+            name as SmsActivationStatus,
+          )
+        ) {
+          throw new Error(`Ошибка sms-activate: '${res.data}'`);
+        }
+      }),
+      map(({ name, value }) => {
+        if (name === SmsActivationStatus.STATUS_WAIT_RETRY) {
+          return { name, lastCode: value };
+        }
+
+        return { name, code: value };
+      }),
+    );
+  }
+
+  async cancelActivation(operId: string) {
+    const res = await this.callApi<string>('setStatus', {
+      id: operId,
+      status: 8,
+    });
+    const { name: status, value = '' } = this.parseTextData(res.data);
+    if (status !== SmsActivationStatus.ACCESS_CANCEL) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+    return true;
+  }
+
+  async finishActivation(operId: string) {
+    const res = await this.callApi<string>('setStatus', {
+      id: operId,
+      status: 6,
+    });
+
+    const { name: status, value = '' } = this.parseTextData(res.data);
+    if (status !== SmsActivationStatus.ACCESS_ACTIVATION) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+    return true;
   }
 }

@@ -1,11 +1,4 @@
-import {
-  Resolver,
-  Mutation,
-  Args,
-  Query,
-  ResolveField,
-  Parent,
-} from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -14,10 +7,12 @@ import { ErrorType } from 'src/common/errors/error.type';
 import { ServiceType } from './types/service.type';
 import { CreatePriceDto } from './dto/create-price.dto';
 import { PriceType } from './types/price.type';
-import { Service } from './service.entity';
 import { CountryApiType } from './types/country-api.type';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
+import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
+import { serviceDictionary } from './service-dictionary';
+import { ServiceDictionaryItemType } from './types/service-dictionary-item.type';
 
 @Resolver(of => ServiceType)
 export class ServicesResolver {
@@ -29,25 +24,63 @@ export class ServicesResolver {
   }
 
   @Query(returns => [ServiceType])
-  async services() {
-    return this._servicesService.getServices();
+  async services(@Args('countryCode') countryCode: string) {
+    return this._servicesService.getDisplayServices(countryCode);
   }
 
-  @ResolveField(returns => [PriceType])
-  async prices(@Parent() service: Service) {
-    return this._servicesService.getPricesByService(service);
+  @Query(returns => [PriceType])
+  async prices() {
+    return this._servicesService.getDisplayPrices();
+  }
+
+  @Query(returns => [ServiceDictionaryItemType])
+  async allServices() {
+    return Object.entries(serviceDictionary).map(([code, name]) => ({
+      code,
+      name,
+    }));
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))
   @Mutation(returns => [ErrorType], { nullable: true })
   async saveService(
     @Args('createServiceDto') createServiceDto: CreateServiceDto,
+    @Args('countryCode') countryCode: string,
+    @Args('price') price: number,
   ) {
     const errors = await validate(createServiceDto, CreateServiceDto);
     if (errors) {
       return errors;
     }
-    return this._servicesService.createOrUpdateService(createServiceDto);
+    return this._servicesService.createOrUpdateService(
+      createServiceDto,
+      countryCode,
+      price,
+    );
+  }
+
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async deleteService(@Args('code') code: string) {
+    return this._servicesService.deleteService(code);
+  }
+
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async restoreService(@Args('code') code: string) {
+    return this._servicesService.restoreService(code);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.WriteServices))
+  @Mutation(returns => [ErrorType], { nullable: true })
+  async saveServicesWithPrices(
+    @Args('servicesWithPrices', { type: () => [CreateServiceWithPricesDto] })
+    servicesWithPrices: CreateServiceWithPricesDto[],
+
+    @Args('countryCode') countryCode: string,
+  ) {
+    return this._servicesService.createOrUpdateServicesWithPrices(
+      servicesWithPrices,
+      countryCode,
+    );
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))

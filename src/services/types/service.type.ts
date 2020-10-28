@@ -1,5 +1,4 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { PriceType } from './price.type';
 
 @ObjectType()
 export class ServiceType {
@@ -12,6 +11,6 @@ export class ServiceType {
   @Field()
   name: string;
 
-  @Field(type => [PriceType])
-  prices: PriceType[];
+  @Field({ nullable: true })
+  priceAmount?: number;
 }

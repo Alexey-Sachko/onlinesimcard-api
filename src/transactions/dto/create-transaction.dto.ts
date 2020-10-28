@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { Money } from 'src/common/money';
+import { TransactionType } from '../transaction-type.enum';
 
 export class CreateTransactionDto {
-  @ApiProperty()
-  amount: number;
+  money: Money;
+  type: TransactionType;
 }
