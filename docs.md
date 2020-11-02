@@ -56,3 +56,4 @@ mutation {
 - paymentId
 - amount
 - userId
+- status: [WAIT_PAY,ERROR,PAID]
