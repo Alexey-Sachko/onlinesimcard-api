@@ -83,8 +83,8 @@ dotenv.config();
         RefreshToken,
         OrderEntity,
       ],
-      synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
-      logging: true,
+      synchronize: JSON.parse(process.env.TYPEORM_SYNCHRONIZE || 'false'),
+      migrationsRun: true,
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
