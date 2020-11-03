@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Ip, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { PaymentDoneDto } from './dto/payment-done.dto';
 import { FreekassaService } from './freekassa.service';
@@ -11,8 +11,12 @@ export class FreekassaController {
   async paymentDone(
     @Body() paymentDoneDto: PaymentDoneDto,
     @Res() res: Response,
+    @Ip() ipAdress: string,
   ) {
-    const result = await this._freekassaService.paymentDone(paymentDoneDto);
+    const result = await this._freekassaService.paymentDone(
+      paymentDoneDto,
+      ipAdress,
+    );
     res.end(result);
   }
 }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { TransactionsService } from 'src/transactions/transactions.service';
 import { OrderStatus } from '../orders/order-status.enum';
 import { OrdersService } from '../orders/orders.service';
 import { PaymentDoneDto } from './dto/payment-done.dto';
+import { fkIpAddresses } from './fk-ip-adress';
 
 @Injectable()
 export class FreekassaService {
@@ -16,7 +18,14 @@ export class FreekassaService {
     private readonly _ordersService: OrdersService,
   ) {}
 
-  async paymentDone({ MERCHANT_ORDER_ID, AMOUNT, intid }: PaymentDoneDto) {
+  async paymentDone(
+    { MERCHANT_ORDER_ID, AMOUNT, intid }: PaymentDoneDto,
+    ipAdress: string,
+  ) {
+    if (!fkIpAddresses.includes(ipAdress)) {
+      throw new ForbiddenException();
+    }
+
     const order = await this._ordersService.getOrder({
       id: Number(MERCHANT_ORDER_ID),
     });
