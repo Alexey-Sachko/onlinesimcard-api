@@ -21,6 +21,9 @@ export class OrderEntity extends DefaultEntity {
   @Column()
   userId: string;
 
+  @Column({ nullable: true })
+  transactionId: string;
+
   @ManyToOne(
     type => User,
     user => user.id,
