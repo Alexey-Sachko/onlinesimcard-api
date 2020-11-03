@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { StatusMonitorModule } from 'nest-status-monitor';
 import * as dotenv from 'dotenv';
 
 import { UsersModule } from './users/users.module';
@@ -25,6 +24,8 @@ import { Activation } from './activations/entity/activation.entity';
 import { ActivationCode } from './activations/entity/activation-code.entity';
 import { RefreshToken } from './users/refresh-token.entity';
 import { BalanceModule } from './balance/balance.module';
+import { OrderEntity } from './pay/orders/order.entity';
+import { PayModule } from './pay/pay.module';
 
 dotenv.config();
 
@@ -80,8 +81,10 @@ dotenv.config();
         Activation,
         ActivationCode,
         RefreshToken,
+        OrderEntity,
       ],
-      synchronize: !!process.env.TYPEORM_SYNCHRONIZE,
+      synchronize: JSON.parse(process.env.TYPEORM_SYNCHRONIZE || 'false'),
+      migrationsRun: true,
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -98,6 +101,7 @@ dotenv.config();
     ArticlesModule,
     ActivationsModule,
     BalanceModule,
+    PayModule,
   ],
   controllers: [],
   providers: [

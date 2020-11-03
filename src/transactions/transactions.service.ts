@@ -14,6 +14,7 @@ import { createError } from 'src/common/errors/create-error';
 import { BuyDto } from './dto/buy.dto';
 import { MakeBonusDto } from './dto/make-bonus.dto';
 import { BalanceService } from 'src/balance/balance.service';
+import { PayDto } from './dto/pay.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -81,6 +82,18 @@ export class TransactionsService {
     );
     if (transaction instanceof NoMoneyException) {
       return transaction.toDisplayError();
+    }
+
+    return transaction;
+  }
+
+  async pay({ money, userId }: PayDto): Promise<Transaction> {
+    const transaction = await this._createTransaction(
+      { money, type: TransactionType.Payment },
+      userId,
+    );
+    if (!(transaction instanceof Transaction)) {
+      throw transaction;
     }
 
     return transaction;
