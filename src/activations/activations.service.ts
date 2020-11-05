@@ -15,6 +15,7 @@ import { TransactionsService } from 'src/transactions/transactions.service';
 import { Money } from 'src/common/money';
 import { ActivationType } from './types/activation.type';
 import { BalanceService } from 'src/balance/balance.service';
+import { NoNumbersException } from 'src/common/smsActivateClient/exceptions/no-numbers.exception';
 
 @Injectable()
 export class ActivationsService {
@@ -159,6 +160,12 @@ export class ActivationsService {
       serviceCode,
       countryCode,
     );
+
+    if (apiOper instanceof NoNumbersException) {
+      return [
+        createError('NO_NUMBERS', 'Нет доступных номеров для данного сервиса'),
+      ];
+    }
 
     const expiresAt = moment()
       .add('minutes', 20)

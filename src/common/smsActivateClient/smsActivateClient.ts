@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
 import { GetAvailableNumbersRO, GetPricesRO } from './smsActivateClient.types';
 import { SmsActivationStatus } from './sms-activation-status.enum';
+import { NoNumbersException } from './exceptions/no-numbers.exception';
 
 config();
 
@@ -70,12 +71,23 @@ export class SmsActivateClient {
     return value;
   }
 
-  async getNumber(serviceCode: string, countryCode: string) {
+  async getNumber(
+    serviceCode: string,
+    countryCode: string,
+  ): Promise<{ operId: string; number: string } | NoNumbersException> {
     const res = await this.callApi<string>('getNumber', {
       service: serviceCode,
       country: countryCode,
     });
     const { name, value = '' } = this.parseTextData(res.data);
+
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(`Ошибка sms-activate: '${res.statusText}' ${res.status}`);
+    }
+
+    if (name === 'NO_NUMBERS') {
+      return new NoNumbersException();
+    }
 
     if (name !== 'ACCESS_NUMBER') {
       throw new Error(`Ошибка sms-activate: '${name}'`);
