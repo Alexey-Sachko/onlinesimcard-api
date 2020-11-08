@@ -159,10 +159,6 @@ export class UsersService {
     return await this.rolesRepository.save(updateRoleDto);
   }
 
-  async getUserByEmail(email: string) {
-    return this.usersRepository.findOne({ email }, { relations: ['role'] });
-  }
-
   async getUserById(id: string): Promise<User | null> {
     const user = await this.usersRepository.findOne(id);
     return user || null;

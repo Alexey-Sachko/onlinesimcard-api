@@ -31,29 +31,6 @@ export class AuthService {
     private _refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
-  async validateToken(tokenString: string): Promise<User | null> {
-    if (tokenString.indexOf(PERM_TOKEN_PREFIX) === 0) {
-      const permToken = await this.permTokenRepository.findOne(
-        { value: tokenString },
-        { relations: ['user'] },
-      );
-      if (!permToken) {
-        throw new UnauthorizedException();
-      }
-      if (permToken.expires_at < new Date()) {
-        throw new UnauthorizedException();
-      }
-      // TODO extract
-      return permToken.user;
-    }
-
-    const { email }: JwtPayload = await this.jwtService.verifyAsync(
-      tokenString,
-    );
-    const user = await this.usersService.getUserByEmail(email);
-    return user;
-  }
-
   private async _findRefreshToken(token: string): Promise<RefreshToken | null> {
     const refreshToken = await this._refreshTokenRepository.findOne({
       where: {

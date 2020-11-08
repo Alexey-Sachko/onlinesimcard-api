@@ -31,8 +31,8 @@ export function GqlAuthGuard(...neccessaryPermissions: Permissions[]) {
       if (!token) {
         return null;
       }
-      const { email }: JwtPayload = await this._jwtService.verifyAsync(token);
-      const user = await this._usersService.getUserByEmail(email);
+      const { id }: JwtPayload = await this._jwtService.verifyAsync(token);
+      const user = await this._usersService.getUserById(id);
       req.user = user;
       return user;
     }
