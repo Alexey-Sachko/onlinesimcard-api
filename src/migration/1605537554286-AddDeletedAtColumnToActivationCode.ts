@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddDeletedAtColumnToActivationCode1605535772539
+export class AddDeletedAtColumnToActivationCode1605537554286
   implements MigrationInterface {
   private _created = false;
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (!(await queryRunner.hasColumn('order_entity', 'deletedAt'))) {
+    if (!(await queryRunner.hasColumn('activation_code', 'deletedAt'))) {
       this._created = true;
       await queryRunner.addColumn(
         'activation_code',
