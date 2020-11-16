@@ -14,4 +14,4 @@ COPY . /usr/bin/app/
 
 RUN npm run build
 
-CMD [ "npm", "start" ]
+CMD [ "yarn", "start:prod" ]
