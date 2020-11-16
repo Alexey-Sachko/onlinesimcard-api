@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  DeleteDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { DefaultEntity } from 'src/common/default-entity';
 import { Service } from './service.entity';
 
@@ -24,7 +18,4 @@ export class PriceEntity extends DefaultEntity {
 
   @ManyToOne(type => Service)
   service: Service;
-
-  @DeleteDateColumn()
-  deletedAt?: Date;
 }

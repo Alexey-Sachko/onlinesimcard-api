@@ -8,7 +8,6 @@ import { EmailClient } from '../common/email.client';
 import { VerifyToken } from './verify-token.entity';
 import { Role } from './role.entity';
 import { AuthService } from './auth.service';
-import { PermToken } from './perm-token.entity';
 import { PassportModule } from '@nestjs/passport';
 import { AuthResolver } from './auth.resolver';
 import { UserResolver } from './user.resolver';
@@ -24,7 +23,6 @@ import { BalanceModule } from 'src/balance/balance.module';
       User,
       VerifyToken,
       Role,
-      PermToken,
       AuthProvider,
       RefreshToken,
     ]),

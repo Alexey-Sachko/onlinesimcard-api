@@ -9,9 +9,7 @@ import { v1 as uuid } from 'uuid';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { UsersService } from '../users/users.service';
 import { JwtPayload } from './jwt-payload.type';
-import { PermToken } from './perm-token.entity';
 import { User } from '../users/user.entity';
-import { PERM_TOKEN_PREFIX } from './constants';
 import { ErrorType } from 'src/common/errors/error.type';
 import { createError } from '../common/errors/create-error';
 import { TokensDto } from './dto/tokens.dto';
@@ -23,9 +21,6 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-
-    @InjectRepository(PermToken)
-    private permTokenRepository: Repository<PermToken>,
 
     @InjectRepository(RefreshToken)
     private _refreshTokenRepository: Repository<RefreshToken>,

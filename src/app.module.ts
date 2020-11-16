@@ -16,7 +16,6 @@ import { TransformInterceptor } from './common/transform.interceptor';
 import { FreeModule } from './free/free.module';
 import { ArticlesModule } from './articles/articles.module';
 import { ArticleORM } from './articles/article.entity';
-import { PermToken } from './users/perm-token.entity';
 import { AuthProvider } from './users/auth-provider.entity';
 import { PriceEntity } from './services/price.entity';
 import { ActivationsModule } from './activations/activations.module';
@@ -74,7 +73,6 @@ dotenv.config();
         Transaction,
         Service,
         Role,
-        PermToken,
         ArticleORM,
         AuthProvider,
         PriceEntity,
