@@ -17,7 +17,7 @@ export class VerifyToken extends BaseEntity {
   token: string;
 
   @CreateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   created_at: string;

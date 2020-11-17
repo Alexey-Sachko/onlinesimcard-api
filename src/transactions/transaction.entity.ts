@@ -24,7 +24,7 @@ export class Transaction extends BaseEntity {
   type: TransactionType;
 
   @CreateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   readonly createdAt: string;
