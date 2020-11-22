@@ -131,10 +131,14 @@ export class TransactionsService {
       return new NoMoneyException();
     }
 
+    const lastTransaction = await this.getLastUserTransaction(userId);
+
     const transaction = new Transaction();
     transaction.userId = userId;
     transaction.amount = money.amount;
-    transaction.balanceBefore = userBalance.amount;
+    transaction.balanceBefore = new Money(lastTransaction.balanceBefore).add(
+      new Money(lastTransaction.amount),
+    ).amount;
     transaction.type = type;
 
     await transaction.save();

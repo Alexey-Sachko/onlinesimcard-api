@@ -69,7 +69,12 @@ export class ActivationsService {
   }
 
   async getFreezedUserMoney(userId: string): Promise<Money> {
-    const activations = await this._getUserCurrentActivations(userId);
+    const activations = await this._activationRepository.find({
+      where: {
+        userId,
+        status: ActivationStatus.WAIT_CODE,
+      },
+    });
     const money = activations.reduce(
       (m, activation) => m.add(new Money(activation.cost)),
       Money.ZERO(),
