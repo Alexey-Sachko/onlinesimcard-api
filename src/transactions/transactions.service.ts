@@ -133,12 +133,16 @@ export class TransactionsService {
 
     const lastTransaction = await this.getLastUserTransaction(userId);
 
+    const currentBalance = lastTransaction
+      ? new Money(lastTransaction.balanceBefore).add(
+          new Money(lastTransaction.amount),
+        )
+      : Money.ZERO();
+
     const transaction = new Transaction();
     transaction.userId = userId;
     transaction.amount = money.amount;
-    transaction.balanceBefore = new Money(lastTransaction.balanceBefore).add(
-      new Money(lastTransaction.amount),
-    ).amount;
+    transaction.balanceBefore = currentBalance.amount;
     transaction.type = type;
 
     await transaction.save();
