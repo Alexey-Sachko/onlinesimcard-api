@@ -13,4 +13,7 @@ export class ServiceType {
 
   @Field({ nullable: true })
   priceAmount?: number;
+
+  @Field()
+  count: number;
 }

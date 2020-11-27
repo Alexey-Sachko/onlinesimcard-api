@@ -9,6 +9,55 @@ import { NoNumbersException } from './exceptions/no-numbers.exception';
 
 config();
 
+// TODO вынести
+export class PricesCountMap {
+  private readonly _countMap: Record<
+    string,
+    { price: number; count: number }[]
+  >;
+
+  constructor(private readonly _source: GetPricesRO) {
+    this._countMap = Object.entries(_source).reduce(
+      (acc, [country, serviceMap]) => {
+        Object.entries(serviceMap).forEach(([service, priceMap]) => {
+          acc[this._buildCountKey({ country, service })] = Object.entries(
+            priceMap,
+          ).map(([price, count]) => ({ price, count }));
+        });
+
+        return acc;
+      },
+      {},
+    );
+  }
+
+  private _buildCountKey({
+    country,
+    service,
+  }: {
+    service: string;
+    country: string;
+  }) {
+    return `${country}:${service}`;
+  }
+
+  getServiceCount({
+    service,
+    country,
+    maxPrice,
+  }: {
+    country: string;
+    service: string;
+    maxPrice?: number;
+  }): number {
+    return (
+      this._countMap[this._buildCountKey({ service, country })]
+        ?.filter(({ price }) => (maxPrice ? price <= maxPrice : true))
+        .reduce((total, { count }) => total + count, 0) || 0
+    );
+  }
+}
+
 @Injectable()
 export class SmsActivateClient {
   private Api: AxiosInstance;
@@ -97,9 +146,10 @@ export class SmsActivateClient {
     return { operId, number };
   }
 
-  async getPrices() {
-    const res = await this.callApi<GetPricesRO>('getPrices');
-    return res.data;
+  async getPrices({ country }: { country?: string }) {
+    const res = await this.callApi<GetPricesRO>('getPrices', { country });
+    const pricesCountMap = new PricesCountMap(res.data);
+    return pricesCountMap;
   }
 
   // async getNumberStub(serviceCode: string, countryCode: string) {
