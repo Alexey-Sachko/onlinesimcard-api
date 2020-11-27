@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
+import { createEvent, createStore } from 'effector';
+import moment from 'moment';
+
 import { Service } from './service.entity';
-import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
+import {
+  PricesCountMap,
+  SmsActivateClient,
+} from '../common/smsActivateClient/smsActivateClient';
 import { PriceEntity } from './price.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { CreatePriceDto } from './dto/create-price.dto';
@@ -15,6 +21,28 @@ import { ServiceType } from './types/service.type';
 import { serviceDictionary } from './service-dictionary';
 import { Money } from 'src/common/money';
 import { PriceType } from './types/price.type';
+
+const addNumbersCountCache = createEvent<{
+  country: string;
+  countMap: PricesCountMap;
+  writeTime: Date;
+}>();
+const numbersCountCache = createStore<{
+  [country: string]:
+    | {
+        writeTime: Date;
+        countMap: PricesCountMap;
+      }
+    | undefined;
+}>({}).on(addNumbersCountCache, (cache, { country, countMap, writeTime }) => ({
+  ...cache,
+  [country]: {
+    countMap,
+    writeTime,
+  },
+}));
+
+const MIN_PRICE_MULTIPLIER = 1.15; // Коэффициент минимальной наценки
 
 @Injectable()
 export class ServicesService {
@@ -30,6 +58,29 @@ export class ServicesService {
 
   async getDisplayServices(countryCode: string): Promise<ServiceType[]> {
     const prices = await this.getDisplayPrices({ countryCode });
+
+    const oldCountMap = numbersCountCache.getState()[countryCode];
+
+    let apiCountMap: PricesCountMap;
+    if (
+      oldCountMap &&
+      moment(oldCountMap.writeTime)
+        .add(2, 'second')
+        .isAfter(moment())
+    ) {
+      apiCountMap = oldCountMap.countMap;
+    } else {
+      apiCountMap = await this._smsActivateClient.getPrices({
+        country: countryCode,
+      });
+
+      addNumbersCountCache({
+        writeTime: new Date(),
+        countMap: apiCountMap,
+        country: countryCode,
+      });
+    }
+
     const services = await this._serviceRepository.find();
     const filtered: ServiceType[] = services
       .filter(service => prices.some(price => service.id === price.serviceId))
@@ -38,12 +89,23 @@ export class ServicesService {
           price =>
             price.countryCode === countryCode && price.serviceId === service.id,
         );
+
+        if (!price) {
+          return null;
+        }
+
         return {
           ...service,
           name: serviceDictionary[service.code],
-          priceAmount: price?.amount,
+          priceAmount: price.amount,
+          count: apiCountMap.getServiceCount({
+            service: service.code,
+            country: countryCode,
+            maxPrice: price.amount / MIN_PRICE_MULTIPLIER, // TODO сделать правильную цену
+          }),
         };
-      });
+      })
+      .filter(Boolean);
     return filtered;
   }
 
@@ -254,7 +316,7 @@ export class ServicesService {
   }
 
   async getApiCountries() {
-    const pricesInfo = await this._smsActivateClient.getPrices();
+    const pricesInfo = await this._smsActivateClient.getPrices({});
     const entries = Object.entries(pricesInfo);
     const countries: CountryApiType[] = entries
       .map(([code]) => ({
@@ -264,9 +326,5 @@ export class ServicesService {
       .filter(({ name }) => Boolean(name));
 
     return countries;
-  }
-
-  async getApiPrices() {
-    return this._smsActivateClient.getPrices();
   }
 }
