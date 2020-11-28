@@ -316,14 +316,11 @@ export class ServicesService {
   }
 
   async getApiCountries() {
-    const pricesInfo = await this._smsActivateClient.getPrices({});
-    const entries = Object.entries(pricesInfo);
-    const countries: CountryApiType[] = entries
-      .map(([code]) => ({
-        code,
-        name: countriesDictionary[code],
-      }))
-      .filter(({ name }) => Boolean(name));
+    const entries = Object.entries(countriesDictionary);
+    const countries: CountryApiType[] = entries.map(([code, name]) => ({
+      code,
+      name,
+    }));
 
     return countries;
   }
