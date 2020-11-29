@@ -6,6 +6,7 @@ import { User } from 'src/users/user.entity';
 import { Repository } from 'typeorm';
 import { OrderStatus } from './order-status.enum';
 import { OrderEntity } from './order.entity';
+import { OrderType } from './order.gql-type';
 
 @Injectable()
 export class OrdersService {
@@ -40,5 +41,10 @@ export class OrdersService {
       { id: order.id },
       { status: OrderStatus.PAID, transactionId: transaction.id, paymentId },
     );
+  }
+
+  async getUserOrders(userId: string): Promise<OrderType[]> {
+    const orders = await this._ordersRepository.find({ where: { userId } });
+    return orders;
   }
 }
