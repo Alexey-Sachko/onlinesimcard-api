@@ -14,4 +14,7 @@ export class OrderType {
 
   @Field(type => OrderStatus)
   status: OrderStatus;
+
+  @Field()
+  createdAt: Date;
 }
