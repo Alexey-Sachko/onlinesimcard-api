@@ -45,6 +45,9 @@ export class OrdersService {
 
   async getUserOrders(userId: string): Promise<OrderType[]> {
     const orders = await this._ordersRepository.find({ where: { userId } });
-    return orders;
+    return orders.map(order => ({
+      ...order,
+      amount: new Money(order.amount).toDecimal(),
+    }));
   }
 }
