@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +24,7 @@ import { setTokenCookie } from './set-token-cookie';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtService: JwtService,
 
@@ -84,6 +90,10 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this._createRefreshToken(user.id);
     return { accessToken, refreshToken: refreshToken.token }; // TODO
+  }
+
+  async deleteAllUserRefreshTokens(user: User) {
+    await this._refreshTokenRepository.delete({ userId: user.id });
   }
 
   async login(
