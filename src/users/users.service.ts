@@ -9,6 +9,9 @@ import { Repository, Connection } from 'typeorm';
 import bcrypt from 'bcryptjs';
 import cryptoRandomString from 'crypto-random-string';
 import dotenv from 'dotenv';
+import moment from 'moment';
+import { Response } from 'express';
+
 import { User } from './user.entity';
 import { UserSignupDto } from './dto/user-signup.dto';
 import { EmailClient } from '../common/email.client';
@@ -24,6 +27,12 @@ import { AuthProviderType } from './auth-provider-type.enum';
 import { AuthProvider } from './auth-provider.entity';
 import { ErrorType } from 'src/common/errors/error.type';
 import { mailConfig } from 'src/config/mail';
+import { ResetPassInput } from './reset-pass/reset-pass.input';
+import { ResetPassToken } from './reset-pass/reset-pass-token.entity';
+import { ResetPassConfirmInput } from './reset-pass/reset-pass-confirm.input';
+import { ResetPassResponse } from './types/reset-pass-response';
+import { AuthService } from './auth.service';
+import { deleteAuthCookies } from './auth.delete-cookies';
 
 dotenv.config();
 
@@ -35,6 +44,8 @@ export class UsersService {
   private logger = new Logger('UsersService');
 
   constructor(
+    private readonly _authService: AuthService,
+
     @InjectRepository(User)
     private usersRepository: Repository<User>,
 
@@ -46,6 +57,9 @@ export class UsersService {
 
     @InjectRepository(AuthProvider)
     private _authProviderReposirory: Repository<AuthProvider>,
+
+    @InjectRepository(ResetPassToken)
+    private _resetPassTokenRepository: Repository<ResetPassToken>,
 
     @InjectConnection()
     private connection: Connection,
@@ -291,6 +305,86 @@ export class UsersService {
     return user.role;
   }
 
+  async resetPassword({ email }: ResetPassInput): Promise<ResetPassResponse> {
+    const oldToken = await this._resetPassTokenRepository.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (oldToken) {
+      const accessAgainTime = moment(oldToken.createdAt)
+        .utc()
+        .add(5, 'minutes');
+
+      if (moment().isBefore(accessAgainTime)) {
+        return {
+          error: createError(
+            'WAIT_TIMEOUT_TO_CREATE_AGAIN',
+            accessAgainTime.toISOString(),
+          ),
+        };
+      }
+    }
+
+    // Удаляем старые токены
+    await this._resetPassTokenRepository.delete({ email }); // TODO - возможна проблема когда люди будут вбивать email других юзеров
+
+    const resetPassToken = new ResetPassToken();
+    resetPassToken.email = email;
+    resetPassToken.expiresAt = moment()
+      .add(1, 'h')
+      .toDate();
+
+    await resetPassToken.save();
+
+    const user = await this.usersRepository.findOne({ email });
+    const newAccessAgainDate = moment()
+      .utc()
+      .add(5, 'minutes')
+      .toDate();
+    if (!user) {
+      await this._sendResetPasswordNotFoundUserEmail(email);
+      return {
+        accessAgain: newAccessAgainDate,
+      };
+    }
+
+    await this._sendResetPasswordEmail(email, resetPassToken.id);
+    return { accessAgain: newAccessAgainDate };
+  }
+
+  async resetPasswordConfirm(
+    { tokenId, newPassword }: ResetPassConfirmInput,
+    res: Response,
+  ): Promise<ErrorType | null> {
+    const token = await this._resetPassTokenRepository.findOne(tokenId);
+    const error = createError('tokenId', 'Token is invalid or expired');
+    if (!token) {
+      return error;
+    }
+
+    if (moment().isAfter(moment(token.expiresAt))) {
+      return error;
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await this.hashPassword(newPassword, salt);
+
+    await this.usersRepository.update(
+      { email: token.email },
+      { salt, password: hashedPassword },
+    );
+
+    const user = await this.usersRepository.findOne({ email: token.email });
+    if (user) {
+      deleteAuthCookies(res);
+      await this._authService.deleteAllUserRefreshTokens(user);
+    }
+
+    token.remove(); // без await чтобы при возникновении ошибки удаления у юзера не вылетала ошибка, т.к. он уже поменял пароль
+  }
+
   private async createVerifyToken(user: User) {
     const token = new VerifyToken();
     token.token = cryptoRandomString({ length: 20 });
@@ -311,8 +405,42 @@ export class UsersService {
         name: mailConfig.mailFromName,
       },
       subject: 'Добро пожаловть в Virtualnum! Подтвердите свой Email',
-      html: `<p>Здравствуйте</p>
+      html: `<p>Здравствуйте!</p>
       <p>Для завершения регистрации перейдите по ссылке - <a href="${link}">${link}</a></p>`,
+    });
+  }
+
+  private async _sendResetPasswordEmail(to: string, token: string) {
+    const link = `${process.env.RESET_PASSWORD_BASE_URL}/${token}`;
+    return this.emailClient.sendEmail({
+      to,
+      from: {
+        email: mailConfig.mailFromAdress,
+        name: mailConfig.mailFromName,
+      },
+      subject: 'Восстановление Вашего пароля Virtualnum',
+      html: `<p>Здравствуйте!</p>
+      <p>Мы получили запрос о восстановлении пароля в Вашей учетной записи.</p>
+      <p>Если Вы не отправляли запрос о восстановлении пароля, Вы можете проигнорировать это сообщение, и Ваша учетная запись не будет изменена.</p>
+      Чтобы восстановить Ваш пароль, нажмите на ссылку внизу:</p>
+      <p><a href="${link}">${link}</a></p>
+      <p>ПРИМЕЧАНИЕ! Ссылка активна только в течение одного часа.</p>
+      <p>С уважением, служба поддержки клиентов Virtualnum</p>`,
+    });
+  }
+
+  private async _sendResetPasswordNotFoundUserEmail(to: string) {
+    return this.emailClient.sendEmail({
+      to,
+      from: {
+        email: mailConfig.mailFromAdress,
+        name: mailConfig.mailFromName,
+      },
+      subject: 'Восстановление Вашего пароля Virtualnum',
+      html: `<p>Здравствуйте!</p>
+      <p>Мы получили запрос о восстановлении пароля в учетной записи с вашим email.</p>
+      <p>К сожалению пользователь с такой почтой ещё не зарегистрирован на нашем сайте.</p>
+      <p>С уважением, служба поддержки клиентов Virtualnum</p>`,
     });
   }
 

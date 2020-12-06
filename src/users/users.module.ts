@@ -16,6 +16,7 @@ import { VkAuthService } from './vk/vk-auth.service';
 import { AuthProvider } from './auth-provider.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { BalanceModule } from 'src/balance/balance.module';
+import { ResetPassToken } from './reset-pass/reset-pass-token.entity';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BalanceModule } from 'src/balance/balance.module';
       Role,
       AuthProvider,
       RefreshToken,
+      ResetPassToken,
     ]),
     PassportModule.register({
       defaultStrategy: 'jwt-perm',

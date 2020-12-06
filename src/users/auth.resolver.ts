@@ -12,6 +12,7 @@ import { GetGqlUser } from './get-user.decorator';
 import { GqlAuthGuard } from './gql-auth.guard';
 import { MeResponse } from './types/me-response.type';
 import { BalanceService } from 'src/balance/balance.service';
+import { deleteAuthCookies } from './auth.delete-cookies';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -70,8 +71,7 @@ export class AuthResolver {
   @UseGuards(GqlAuthGuard())
   async logout(@Context() context: MyGqlContext, @GetGqlUser() user: User) {
     await this._authService.logout(user.id);
-    context.res.clearCookie('accessToken');
-    context.res.clearCookie('refreshToken');
+    deleteAuthCookies(context.res);
     return true;
   }
 }

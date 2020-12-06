@@ -25,6 +25,7 @@ import { RefreshToken } from './users/refresh-token.entity';
 import { BalanceModule } from './balance/balance.module';
 import { OrderEntity } from './pay/orders/order.entity';
 import { PayModule } from './pay/pay.module';
+import { ResetPassToken } from './users/reset-pass/reset-pass-token.entity';
 
 dotenv.config();
 
@@ -80,6 +81,7 @@ dotenv.config();
         ActivationCode,
         RefreshToken,
         OrderEntity,
+        ResetPassToken,
       ],
       synchronize: JSON.parse(process.env.TYPEORM_SYNCHRONIZE || 'false'),
       migrationsRun: true,
