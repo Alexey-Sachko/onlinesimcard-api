@@ -22,6 +22,7 @@ export class PayService {
     const paymentUrl = freekassa.getForm(
       makePaymentInput.amount,
       order.id.toString(),
+      { email: user.email || undefined },
     );
 
     return {

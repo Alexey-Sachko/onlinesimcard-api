@@ -36,14 +36,16 @@ class FreekassaClient {
     // this.walletId = walletId
   }
 
-  getForm(orderAmount: number, orderId: string) {
-    return (
-      'http://www.free-kassa.ru/merchant/cash.php' +
-      `?m=${this.merchantId}` +
-      `&oa=${orderAmount}` +
-      `&o=${orderId}` +
-      `&s=${this.getFormSign(orderAmount, orderId)}`
-    );
+  getForm(orderAmount: number, orderId: string, options?: { email: string }) {
+    const paramsString = this._params({
+      m: this.merchantId,
+      oa: orderAmount,
+      o: orderId,
+      s: this.getFormSign(orderAmount, orderId),
+      em: options?.email,
+    });
+
+    return `http://www.free-kassa.ru/merchant/cash.php?${paramsString}`;
   }
 
   getFormSign(orderAmount: number, orderId: string) {
@@ -56,6 +58,15 @@ class FreekassaClient {
     return md5(
       [this.merchantId, orderAmount, this.secondSecret, orderId].join(':'),
     );
+  }
+
+  private _params(p: Record<string | number, string | number>) {
+    return Object.entries(p)
+      .filter(([, value]) => value !== undefined)
+      .reduce((acc, [key, value]) => {
+        return acc + `${key}=${value}&`;
+      }, '')
+      .replace(/\&$/, '');
   }
 
   //   async getBalance() {
