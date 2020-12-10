@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/users/user.entity';
 import { freekassa } from './client/free-kassa.client';
+import { FormMethod } from './gql-types/form-method.enum';
 import { MakePaymentResType } from './gql-types/make-payment-res.type';
 
 import { MakePaymentInput } from './input/make-payment.input';
@@ -19,7 +20,8 @@ export class PayService {
       makePaymentInput.amount,
     );
 
-    const paymentUrl = freekassa.getForm(
+    const formUrl = freekassa.getFormBaseUrl();
+    const params = freekassa.getFormFields(
       makePaymentInput.amount,
       order.id.toString(),
       { email: user.email || undefined },
@@ -27,7 +29,12 @@ export class PayService {
 
     return {
       orderId: order.id,
-      url: paymentUrl,
+      formUrl,
+      method: FormMethod.GET,
+      fields: Object.entries(params).map(([name, value]) => ({
+        name,
+        value: String(value),
+      })),
     };
   }
 }

@@ -6,6 +6,8 @@ class FreekassaClient {
   secondSecret: string;
   merchantId: string;
 
+  private readonly _formBaseUrl = 'http://www.free-kassa.ru/merchant/cash.php';
+
   constructor({
     firstSecret,
     secondSecret,
@@ -36,16 +38,29 @@ class FreekassaClient {
     // this.walletId = walletId
   }
 
-  getForm(orderAmount: number, orderId: string, options?: { email: string }) {
-    const paramsString = this._params({
+  getFormBaseUrl() {
+    return this._formBaseUrl;
+  }
+
+  getFormFields(
+    orderAmount: number,
+    orderId: string,
+    options?: { email: string },
+  ) {
+    return {
       m: this.merchantId,
       oa: orderAmount,
       o: orderId,
       s: this.getFormSign(orderAmount, orderId),
       em: options?.email,
-    });
+    };
+  }
 
-    return `http://www.free-kassa.ru/merchant/cash.php?${paramsString}`;
+  getForm(orderAmount: number, orderId: string, options?: { email: string }) {
+    const paramsString = this._params(
+      this.getFormFields(orderAmount, orderId, options),
+    );
+    return `${this._formBaseUrl}?${paramsString}`;
   }
 
   getFormSign(orderAmount: number, orderId: string) {
