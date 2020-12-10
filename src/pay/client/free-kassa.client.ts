@@ -1,7 +1,10 @@
 import md5 from 'md5';
 import { freekassaConfig } from 'src/config/freekassa';
+import { KassaPayment } from '../common/kassa-payment.interface';
+import { GetFormOptions, Kassa } from '../common/kassa.interface';
+import { FormMethod } from '../gql-types/form-method.enum';
 
-class FreekassaClient {
+class FreekassaClient implements Kassa {
   firstSecret: string;
   secondSecret: string;
   merchantId: string;
@@ -56,11 +59,12 @@ class FreekassaClient {
     };
   }
 
-  getForm(orderAmount: number, orderId: string, options?: { email: string }) {
-    const paramsString = this._params(
-      this.getFormFields(orderAmount, orderId, options),
-    );
-    return `${this._formBaseUrl}?${paramsString}`;
+  getForm({ orderAmount, orderId, email }: GetFormOptions): KassaPayment {
+    return {
+      formUrl: this._formBaseUrl,
+      method: FormMethod.GET,
+      params: this.getFormFields(orderAmount, orderId, { email }),
+    };
   }
 
   getFormSign(orderAmount: number, orderId: string) {
@@ -73,15 +77,6 @@ class FreekassaClient {
     return md5(
       [this.merchantId, orderAmount, this.secondSecret, orderId].join(':'),
     );
-  }
-
-  private _params(p: Record<string | number, string | number>) {
-    return Object.entries(p)
-      .filter(([, value]) => value !== undefined)
-      .reduce((acc, [key, value]) => {
-        return acc + `${key}=${value}&`;
-      }, '')
-      .replace(/\&$/, '');
   }
 
   //   async getBalance() {
