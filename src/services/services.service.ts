@@ -22,6 +22,8 @@ import { serviceDictionary } from './service-dictionary';
 import { Money } from 'src/common/money';
 import { PriceType } from './types/price.type';
 import { CountriesQueryInput } from './input/country-query.input';
+import { ServiceFromApi } from './types/api-services-count';
+import { ServicesApiQueryInput } from './input/services-api-query.input';
 
 const addNumbersCountCache = createEvent<{
   country: string;
@@ -57,9 +59,7 @@ export class ServicesService {
     private readonly _smsActivateClient: SmsActivateClient,
   ) {}
 
-  async getDisplayServices(countryCode: string): Promise<ServiceType[]> {
-    const prices = await this.getDisplayPrices({ countryCode });
-
+  private async _getCountMap({ countryCode }: { countryCode: string }) {
     const oldCountMap = numbersCountCache.getState()[countryCode];
 
     let apiCountMap: PricesCountMap;
@@ -71,7 +71,7 @@ export class ServicesService {
     ) {
       apiCountMap = oldCountMap.countMap;
     } else {
-      apiCountMap = await this._smsActivateClient.getPrices({
+      apiCountMap = await this._smsActivateClient.getPriceCountMap({
         country: countryCode,
       });
 
@@ -81,6 +81,30 @@ export class ServicesService {
         country: countryCode,
       });
     }
+
+    return apiCountMap;
+  }
+
+  async getApiServices({
+    country,
+  }: ServicesApiQueryInput): Promise<ServiceFromApi[]> {
+    const countryMap = await this._smsActivateClient.getPrices({
+      country,
+    });
+    const serviceMap = countryMap[country];
+    return Object.entries(serviceMap).map(([code, priceMap]) => ({
+      code,
+      name: serviceDictionary[code],
+      prices: Object.entries(priceMap).map(([price, count]) => ({
+        price: Number(price),
+        count,
+      })),
+    }));
+  }
+
+  async getDisplayServices(countryCode: string): Promise<ServiceType[]> {
+    const prices = await this.getDisplayPrices({ countryCode });
+    const apiCountMap = await this._getCountMap({ countryCode });
 
     const services = await this._serviceRepository.find();
     const filtered: ServiceType[] = services

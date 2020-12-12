@@ -14,6 +14,8 @@ import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto
 import { serviceDictionary } from './service-dictionary';
 import { ServiceDictionaryItemType } from './types/service-dictionary-item.type';
 import { CountriesQueryInput } from './input/country-query.input';
+import { ServiceFromApi } from './types/api-services-count';
+import { ServicesApiQueryInput } from './input/services-api-query.input';
 
 @Resolver(of => ServiceType)
 export class ServicesResolver {
@@ -43,6 +45,13 @@ export class ServicesResolver {
       code,
       name,
     }));
+  }
+
+  @Query(returns => [ServiceFromApi])
+  async apiServices(
+    @Args('servicesApiQueryInput') servicesApiQueryInput: ServicesApiQueryInput,
+  ) {
+    return this._servicesService.getApiServices(servicesApiQueryInput);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))
