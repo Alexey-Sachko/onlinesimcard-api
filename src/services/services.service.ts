@@ -13,7 +13,7 @@ import { PriceEntity } from './price.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { CreatePriceDto } from './dto/create-price.dto';
 import { ErrorType } from 'src/common/errors/error.type';
-import { CountryApiType } from './types/country-api.type';
+import { CountryType } from './types/country-api.type';
 import { countriesDictionary } from './data/countries-dictionary';
 import { createError } from 'src/common/errors/create-error';
 import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
@@ -21,6 +21,7 @@ import { ServiceType } from './types/service.type';
 import { serviceDictionary } from './service-dictionary';
 import { Money } from 'src/common/money';
 import { PriceType } from './types/price.type';
+import { CountriesQueryInput } from './input/country-query.input';
 
 const addNumbersCountCache = createEvent<{
   country: string;
@@ -315,12 +316,24 @@ export class ServicesService {
     return null;
   }
 
-  async getApiCountries() {
+  async getCountries(filter: CountriesQueryInput = {}): Promise<CountryType[]> {
     const entries = Object.entries(countriesDictionary);
-    const countries: CountryApiType[] = entries.map(([code, name]) => ({
+    const countries: CountryType[] = entries.map(([code, name]) => ({
       code,
       name,
     }));
+
+    if (filter.notEmpty) {
+      const prices: { countryCode: string }[] = await this._priceRepository
+        .createQueryBuilder()
+        .select('"countryCode"')
+        .distinct(true)
+        .getRawMany();
+
+      return countries.filter(({ code }) =>
+        prices.some(({ countryCode }) => countryCode === code),
+      );
+    }
 
     return countries;
   }
