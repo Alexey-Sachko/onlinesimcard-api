@@ -12,6 +12,6 @@ RUN yarn install
 
 COPY . /usr/bin/app/
 
-RUN npm run build
+RUN yarn build
 
 CMD [ "yarn", "start:prod" ]
