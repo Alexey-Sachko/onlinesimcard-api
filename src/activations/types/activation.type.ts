@@ -20,6 +20,9 @@ export class ActivationType {
   serviceCode: string;
 
   @Field()
+  countryCode: string;
+
+  @Field()
   expiresAt: Date;
 
   @Field()

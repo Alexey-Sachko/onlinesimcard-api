@@ -48,6 +48,7 @@ export class ActivationsService {
           ...activation,
           cost: new Money(activation.cost).toDecimal(),
           serviceCode: price?.service?.code,
+          countryCode: price?.countryCode,
         };
       }),
     );
