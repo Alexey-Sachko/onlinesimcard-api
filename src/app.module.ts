@@ -26,6 +26,7 @@ import { BalanceModule } from './balance/balance.module';
 import { OrderEntity } from './pay/orders/order.entity';
 import { PayModule } from './pay/pay.module';
 import { ResetPassToken } from './users/reset-pass/reset-pass-token.entity';
+import { typeormConfig } from './config/typeorm.config';
 
 dotenv.config();
 
@@ -62,12 +63,7 @@ dotenv.config();
     // }),
     UsersModule,
     TypeOrmModule.forRoot({
-      type: process.env.TYPEORM_CONNECTION as any,
-      host: process.env.TYPEORM_HOST,
-      port: parseInt(process.env.TYPEORM_PORT),
-      username: process.env.TYPEORM_USERNAME,
-      password: process.env.TYPEORM_PASSWORD,
-      database: process.env.TYPEORM_DATABASE,
+      ...typeormConfig,
       entities: [
         User,
         VerifyToken,
@@ -83,8 +79,6 @@ dotenv.config();
         OrderEntity,
         ResetPassToken,
       ],
-      synchronize: JSON.parse(process.env.TYPEORM_SYNCHRONIZE || 'false'),
-      migrationsRun: true,
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
