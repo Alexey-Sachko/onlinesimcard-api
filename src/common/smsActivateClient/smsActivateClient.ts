@@ -13,7 +13,7 @@ config();
 export class PricesCountMap {
   private readonly _countMap: Record<
     string,
-    { price: number; count: number }[]
+    { price: number; count: number; country: string; service: string }[]
   >;
 
   constructor(private readonly _source: GetPricesRO) {
@@ -22,7 +22,7 @@ export class PricesCountMap {
         Object.entries(serviceMap).forEach(([service, priceMap]) => {
           acc[this._buildCountKey({ country, service })] = Object.entries(
             priceMap,
-          ).map(([price, count]) => ({ price, count }));
+          ).map(([price, count]) => ({ price, count, country, service }));
         });
 
         return acc;
@@ -148,7 +148,12 @@ export class SmsActivateClient {
 
   async getPrices({ country }: { country?: string }) {
     const res = await this.callApi<GetPricesRO>('getPrices', { country });
-    const pricesCountMap = new PricesCountMap(res.data);
+    return res.data;
+  }
+
+  async getPriceCountMap({ country }: { country?: string }) {
+    const data = await this.getPrices({ country });
+    const pricesCountMap = new PricesCountMap(data);
     return pricesCountMap;
   }
 

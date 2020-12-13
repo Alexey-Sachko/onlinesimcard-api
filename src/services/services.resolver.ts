@@ -7,20 +7,26 @@ import { ErrorType } from 'src/common/errors/error.type';
 import { ServiceType } from './types/service.type';
 import { CreatePriceDto } from './dto/create-price.dto';
 import { PriceType } from './types/price.type';
-import { CountryApiType } from './types/country-api.type';
+import { CountryType } from './types/country-api.type';
 import { GqlAuthGuard } from 'src/users/gql-auth.guard';
 import { Permissions } from 'src/users/permissions.enum';
 import { CreateServiceWithPricesDto } from './dto/create-service-with-prices.dto';
 import { serviceDictionary } from './service-dictionary';
 import { ServiceDictionaryItemType } from './types/service-dictionary-item.type';
+import { CountriesQueryInput } from './input/country-query.input';
+import { ServiceFromApi } from './types/api-services-count';
+import { ServicesApiQueryInput } from './input/services-api-query.input';
 
 @Resolver(of => ServiceType)
 export class ServicesResolver {
   constructor(private readonly _servicesService: ServicesService) {}
 
-  @Query(returns => [CountryApiType])
-  async countriesFromApi() {
-    return this._servicesService.getApiCountries();
+  @Query(returns => [CountryType])
+  async countries(
+    @Args('countriesQueryInput', { nullable: true })
+    countriesQueryInput?: CountriesQueryInput,
+  ) {
+    return this._servicesService.getCountries(countriesQueryInput);
   }
 
   @Query(returns => [ServiceType])
@@ -39,6 +45,13 @@ export class ServicesResolver {
       code,
       name,
     }));
+  }
+
+  @Query(returns => [ServiceFromApi])
+  async apiServices(
+    @Args('servicesApiQueryInput') servicesApiQueryInput: ServicesApiQueryInput,
+  ) {
+    return this._servicesService.getApiServices(servicesApiQueryInput);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteServices))
