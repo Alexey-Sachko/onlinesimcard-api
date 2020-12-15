@@ -33,6 +33,8 @@ import { ResetPassConfirmInput } from './reset-pass/reset-pass-confirm.input';
 import { ResetPassResponse } from './types/reset-pass-response';
 import { AuthService } from './auth.service';
 import { deleteAuthCookies } from './auth.delete-cookies';
+import { BalanceService } from 'src/balance/balance.service';
+import { UserType } from './types/user.type';
 
 dotenv.config();
 
@@ -45,6 +47,8 @@ export class UsersService {
 
   constructor(
     private readonly _authService: AuthService,
+
+    private readonly _balanceService: BalanceService,
 
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -124,11 +128,17 @@ export class UsersService {
     return this.rolesRepository.find();
   }
 
-  async getUsers(): Promise<User[]> {
+  async getDisplayUsers(): Promise<UserType[]> {
     const users = await this.usersRepository.find({
       relations: ['role'],
     });
-    return users;
+
+    return Promise.all(
+      users.map(async user => {
+        const balance = await this._balanceService.getDisplayUserBalance(user);
+        return { ...user, balance };
+      }),
+    );
   }
 
   async createRole(createRoleDto: CreateRoleDto) {

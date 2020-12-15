@@ -9,6 +9,9 @@ export class UserType {
   @Field({ nullable: true })
   email?: string;
 
-  @Field(type => RoleType)
+  @Field(type => RoleType, { nullable: true })
   role: RoleType;
+
+  @Field()
+  balance: number;
 }

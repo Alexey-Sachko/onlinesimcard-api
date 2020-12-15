@@ -22,6 +22,7 @@ export class TransactionsService {
     @InjectRepository(Transaction)
     private readonly _transactionRepository: Repository<Transaction>,
 
+    @Inject(forwardRef(() => UsersService))
     private readonly _usersService: UsersService,
 
     @Inject(forwardRef(() => BalanceService))

@@ -89,7 +89,7 @@ export class UserResolver {
   @UseGuards(GqlAuthGuard(Permissions.ReadUsers))
   @Query(returns => [UserType])
   async users(): Promise<UserType[]> {
-    return this._usersService.getUsers();
+    return this._usersService.getDisplayUsers();
   }
 
   @Query(returns => [Permissions])
