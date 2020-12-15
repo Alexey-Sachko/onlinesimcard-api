@@ -35,6 +35,7 @@ import { AuthService } from './auth.service';
 import { deleteAuthCookies } from './auth.delete-cookies';
 import { BalanceService } from 'src/balance/balance.service';
 import { UserType } from './types/user.type';
+import { UsersStat } from './types/users-stat.type';
 
 dotenv.config();
 
@@ -139,6 +140,15 @@ export class UsersService {
         return { ...user, balance };
       }),
     );
+  }
+
+  async getUsersStat(): Promise<UsersStat> {
+    const displayUsers = await this.getDisplayUsers();
+    const totalBalance = displayUsers.reduce(
+      (acc, item) => acc + item.balance,
+      0,
+    );
+    return { totalBalance, usersCount: displayUsers.length };
   }
 
   async createRole(createRoleDto: CreateRoleDto) {

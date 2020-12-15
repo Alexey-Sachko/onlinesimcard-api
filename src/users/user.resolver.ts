@@ -14,6 +14,7 @@ import { ResetPassConfirmInput } from './reset-pass/reset-pass-confirm.input';
 import { ResetPassResponse } from './types/reset-pass-response';
 import { MyGqlContext } from 'src/common/my-gql-context';
 import { AuthService } from './auth.service';
+import { UsersStat } from './types/users-stat.type';
 
 @Resolver()
 export class UserResolver {
@@ -90,6 +91,12 @@ export class UserResolver {
   @Query(returns => [UserType])
   async users(): Promise<UserType[]> {
     return this._usersService.getDisplayUsers();
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.ReadUsers))
+  @Query(returns => UsersStat)
+  async usersStat(): Promise<UsersStat> {
+    return this._usersService.getUsersStat();
   }
 
   @Query(returns => [Permissions])
