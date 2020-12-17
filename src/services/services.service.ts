@@ -66,7 +66,7 @@ export class ServicesService {
     if (
       oldCountMap &&
       moment(oldCountMap.writeTime)
-        .add(2, 'second')
+        .add(4, 'second')
         .isAfter(moment())
     ) {
       apiCountMap = oldCountMap.countMap;

@@ -78,7 +78,7 @@ export class SmsActivateClient {
         ...(query || {}),
       },
       timeout: 30000,
-    }).catch(() => process.exit(0));
+    });
   }
 
   private parseTextData(data: string) {
@@ -148,6 +148,15 @@ export class SmsActivateClient {
 
   async getPrices({ country }: { country?: string }) {
     const res = await this.callApi<GetPricesRO>('getPrices', { country });
+
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(`Ошибка sms-activate: '${res.statusText}' ${res.status}`);
+    }
+
+    if (typeof res.data === 'string') {
+      throw new Error(`Ошибка sms-activate: ${res.data}`);
+    }
+
     return res.data;
   }
 
