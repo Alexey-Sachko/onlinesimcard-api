@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SentryModule } from '@ntegral/nestjs-sentry';
 import * as dotenv from 'dotenv';
 
 import { UsersModule } from './users/users.module';
@@ -27,6 +28,7 @@ import { OrderEntity } from './pay/orders/order.entity';
 import { PayModule } from './pay/pay.module';
 import { ResetPassToken } from './users/reset-pass/reset-pass-token.entity';
 import { typeormConfig } from './config/typeorm.config';
+import { SENTRY_DSN } from './main';
 
 dotenv.config();
 
@@ -62,6 +64,12 @@ dotenv.config();
     //   healthChecks: [],
     // }),
     UsersModule,
+    SentryModule.forRoot({
+      dsn: SENTRY_DSN,
+      debug: false,
+      environment: process.env.NODE_ENV, //'dev' | 'production' | 'some_environment',
+      release: null, // must create a release in sentry.io dashboard //based on sentry.io loglevel //
+    }),
     TypeOrmModule.forRoot({
       ...typeormConfig,
       entities: [

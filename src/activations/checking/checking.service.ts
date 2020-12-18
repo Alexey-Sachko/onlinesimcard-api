@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BehaviorSubject } from 'rxjs';
+import * as Sentry from '@sentry/minimal';
 
 import { SmsActivationStatus } from 'src/common/smsActivateClient/sms-activation-status.enum';
 import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
@@ -43,7 +44,12 @@ export class CheckingService {
     });
 
     await Promise.all(
-      currentActivations.map(activation => this.checkOneActivation(activation)),
+      currentActivations.map(activation =>
+        this.checkOneActivation(activation).catch(err => {
+          console.error(err);
+          return Sentry.captureException(err);
+        }),
+      ),
     );
   }
 
