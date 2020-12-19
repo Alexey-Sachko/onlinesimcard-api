@@ -5,10 +5,7 @@ import { createEvent, createStore } from 'effector';
 import moment from 'moment';
 
 import { Service } from './service.entity';
-import {
-  PricesCountMap,
-  SmsActivateClient,
-} from '../common/smsActivateClient/smsActivateClient';
+import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
 import { PriceEntity } from './price.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { CreatePriceDto } from './dto/create-price.dto';
@@ -24,6 +21,7 @@ import { PriceType } from './types/price.type';
 import { CountriesQueryInput } from './input/country-query.input';
 import { ServiceFromApi } from './types/api-services-count';
 import { ServicesApiQueryInput } from './input/services-api-query.input';
+import { PricesCountMap } from 'src/common/smsActivateClient/prices-count.map';
 
 const addNumbersCountCache = createEvent<{
   country: string;
@@ -59,38 +57,10 @@ export class ServicesService {
     private readonly _smsActivateClient: SmsActivateClient,
   ) {}
 
-  private async _getCountMap({ countryCode }: { countryCode: string }) {
-    const oldCountMap = numbersCountCache.getState()[countryCode];
-
-    let apiCountMap: PricesCountMap;
-    if (
-      oldCountMap &&
-      moment(oldCountMap.writeTime)
-        .add(4, 'second')
-        .isAfter(moment())
-    ) {
-      apiCountMap = oldCountMap.countMap;
-    } else {
-      apiCountMap = await this._smsActivateClient.getPriceCountMap({
-        country: countryCode,
-      });
-
-      addNumbersCountCache({
-        writeTime: new Date(),
-        countMap: apiCountMap,
-        country: countryCode,
-      });
-    }
-
-    return apiCountMap;
-  }
-
   async getApiServices({
     country,
   }: ServicesApiQueryInput): Promise<ServiceFromApi[]> {
-    const countryMap = await this._smsActivateClient.getPrices({
-      country,
-    });
+    const countryMap = await this._smsActivateClient.getPrices();
     const serviceMap = countryMap[country];
     return Object.entries(serviceMap).map(([code, priceMap]) => ({
       code,
@@ -104,7 +74,7 @@ export class ServicesService {
 
   async getDisplayServices(countryCode: string): Promise<ServiceType[]> {
     const prices = await this.getDisplayPrices({ countryCode });
-    const apiCountMap = await this._getCountMap({ countryCode });
+    const apiCountMap = await this._smsActivateClient.getPriceCountMap();
 
     const services = await this._serviceRepository.find();
     const filtered: ServiceType[] = services

@@ -1,62 +1,28 @@
-import Axios, { AxiosInstance } from 'axios';
+import Axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
+import { createEvent, restore } from 'effector';
+import moment from 'moment';
+
 import { GetAvailableNumbersRO, GetPricesRO } from './smsActivateClient.types';
 import { SmsActivationStatus } from './sms-activation-status.enum';
 import { NoNumbersException } from './exceptions/no-numbers.exception';
+import { PricesCountMap } from './prices-count.map';
 
 config();
 
 // TODO вынести
-export class PricesCountMap {
-  private readonly _countMap: Record<
-    string,
-    { price: number; count: number; country: string; service: string }[]
-  >;
 
-  constructor(private readonly _source: GetPricesRO) {
-    this._countMap = Object.entries(_source).reduce(
-      (acc, [country, serviceMap]) => {
-        Object.entries(serviceMap).forEach(([service, priceMap]) => {
-          acc[this._buildCountKey({ country, service })] = Object.entries(
-            priceMap,
-          ).map(([price, count]) => ({ price, count, country, service }));
-        });
-
-        return acc;
-      },
-      {},
-    );
-  }
-
-  private _buildCountKey({
-    country,
-    service,
-  }: {
-    service: string;
-    country: string;
-  }) {
-    return `${country}:${service}`;
-  }
-
-  getServiceCount({
-    service,
-    country,
-    maxPrice,
-  }: {
-    country: string;
-    service: string;
-    maxPrice?: number;
-  }): number {
-    return (
-      this._countMap[this._buildCountKey({ service, country })]
-        ?.filter(({ price }) => (maxPrice ? price <= maxPrice : true))
-        .reduce((total, { count }) => total + count, 0) || 0
-    );
-  }
-}
+const setCacheGetPricesAllCountries = createEvent<{
+  data: GetPricesRO;
+  time: Date;
+}>();
+const cacheGetPricesAllCountries = restore<{
+  data: GetPricesRO;
+  time: Date | null;
+}>(setCacheGetPricesAllCountries, { data: {}, time: null });
 
 @Injectable()
 export class SmsActivateClient {
@@ -78,6 +44,9 @@ export class SmsActivateClient {
         ...(query || {}),
       },
       timeout: 30000,
+    }).then(res => {
+      this._checkHttpStatus(res);
+      return res;
     });
   }
 
@@ -86,6 +55,12 @@ export class SmsActivateClient {
     const name = match[1];
     const value = match[3];
     return { name, value };
+  }
+
+  private _checkHttpStatus(res: AxiosResponse): never | void {
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(`Ошибка sms-activate: '${res.statusText}' ${res.status}`);
+    }
   }
 
   async hasService(code: string): Promise<boolean> {
@@ -146,22 +121,34 @@ export class SmsActivateClient {
     return { operId, number };
   }
 
-  async getPrices({ country }: { country?: string }) {
-    const res = await this.callApi<GetPricesRO>('getPrices', { country });
+  async getPricesAllCountries() {
+    return this.getPrices();
+  }
 
-    if (res.status < 200 || res.status >= 300) {
-      throw new Error(`Ошибка sms-activate: '${res.statusText}' ${res.status}`);
+  async getPrices() {
+    const cache = cacheGetPricesAllCountries.getState();
+
+    if (
+      moment(cache.time)
+        .add(5, 'seconds')
+        .isAfter(moment(new Date()))
+    ) {
+      return cache.data;
     }
+
+    const res = await this.callApi<GetPricesRO>('getPrices');
 
     if (typeof res.data === 'string') {
       throw new Error(`Ошибка sms-activate: ${res.data}`);
     }
 
+    setCacheGetPricesAllCountries({ time: new Date(), data: res.data });
+
     return res.data;
   }
 
-  async getPriceCountMap({ country }: { country?: string }) {
-    const data = await this.getPrices({ country });
+  async getPriceCountMap() {
+    const data = await this.getPrices();
     const pricesCountMap = new PricesCountMap(data);
     return pricesCountMap;
   }
