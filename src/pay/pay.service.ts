@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/users/user.entity';
 import { freekassa } from './client/free-kassa.client';
-import { interkassa } from './client/interkassa.client';
+// import { interkassa } from './client/interkassa.client';
 import { Kassa } from './common/kassa.interface';
 import { MakePaymentResType } from './gql-types/make-payment-res.type';
 
@@ -11,7 +11,7 @@ import { OrdersService } from './orders/orders.service';
 
 const kassaMap: Record<PaymentVariant, Kassa> = {
   [PaymentVariant.FREEKASSA]: freekassa,
-  [PaymentVariant.INTERKASSA]: interkassa,
+  // [PaymentVariant.INTERKASSA]: interkassa,
 };
 @Injectable()
 export class PayService {
