@@ -37,10 +37,12 @@ export class PayService {
       orderId: order.id,
       formUrl: payment.formUrl,
       method: payment.method,
-      fields: Object.entries(payment.params).map(([name, value]) => ({
-        name,
-        value: String(value),
-      })),
+      fields: Object.entries(payment.params)
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([name, value]) => ({
+          name,
+          value: String(value),
+        })),
     };
   }
 }
