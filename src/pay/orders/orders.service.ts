@@ -102,6 +102,25 @@ export class OrdersService {
     });
   }
 
+  async forceCompleteOrder({
+    paymentId,
+    orderId,
+  }: {
+    orderId: number;
+    paymentId: string;
+  }) {
+    const order = await this.getOrder({ id: orderId });
+
+    const money = new Money(order.amount);
+
+    const transaction = await this._transactionsService.pay({
+      money,
+      userId: order.userId,
+    });
+
+    this.complete(order, transaction, { paymentId });
+  }
+
   async getUserOrders(userId: string): Promise<OrderType[]> {
     const orders = await this._ordersRepository.find({
       where: { userId },

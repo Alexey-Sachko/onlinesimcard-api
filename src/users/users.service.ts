@@ -90,8 +90,10 @@ export class UsersService {
     } else {
       this.logger.verbose(`Role: "${ROOT_ADMIN_ROLE}" already exists`);
     }
-    role.permissions = Object.values(Permissions); // Все разрешения для ROOT_ADMIN_ROLE
-    await role.save();
+    await this.rolesRepository.update(role.id, {
+      permissions: Object.values(Permissions),
+    });
+
     this.logger.verbose(
       `Role: "${ROOT_ADMIN_ROLE}" was saved with fresh permissions`,
     );
