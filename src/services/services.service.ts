@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
-import { createEvent, createStore } from 'effector';
-import moment from 'moment';
+import * as Sentry from '@sentry/minimal';
 
 import { Service } from './service.entity';
 import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
@@ -22,26 +21,6 @@ import { CountriesQueryInput } from './input/country-query.input';
 import { ServiceFromApi } from './types/api-services-count';
 import { ServicesApiQueryInput } from './input/services-api-query.input';
 import { PricesCountMap } from 'src/common/smsActivateClient/prices-count.map';
-
-const addNumbersCountCache = createEvent<{
-  country: string;
-  countMap: PricesCountMap;
-  writeTime: Date;
-}>();
-const numbersCountCache = createStore<{
-  [country: string]:
-    | {
-        writeTime: Date;
-        countMap: PricesCountMap;
-      }
-    | undefined;
-}>({}).on(addNumbersCountCache, (cache, { country, countMap, writeTime }) => ({
-  ...cache,
-  [country]: {
-    countMap,
-    writeTime,
-  },
-}));
 
 const MIN_PRICE_MULTIPLIER = 1.15; // Коэффициент минимальной наценки
 
@@ -74,7 +53,12 @@ export class ServicesService {
 
   async getDisplayServices(countryCode: string): Promise<ServiceType[]> {
     const prices = await this.getDisplayPrices({ countryCode });
-    const apiCountMap = await this._smsActivateClient.getPriceCountMap();
+    const apiCountMap = await this._smsActivateClient
+      .getPriceCountMap()
+      .catch(err => {
+        Sentry.captureException(err);
+        return new PricesCountMap({});
+      });
 
     const services = await this._serviceRepository.find();
     const filtered: ServiceType[] = services
