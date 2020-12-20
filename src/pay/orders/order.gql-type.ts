@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { PaymentVariant } from '../input/payment-variant.enum';
 import { OrderStatus } from './order-status.enum';
 
 @ObjectType()
@@ -17,4 +18,7 @@ export class OrderType {
 
   @Field()
   createdAt: Date;
+
+  @Field(type => PaymentVariant)
+  formVariant: PaymentVariant;
 }

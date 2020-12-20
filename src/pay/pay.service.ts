@@ -25,7 +25,11 @@ export class PayService {
   ): Promise<MakePaymentResType> {
     const { amount, variant } = makePaymentInput;
 
-    const order = await this._ordersService.createOrder(user, amount);
+    const order = await this._ordersService.createOrder({
+      user,
+      amount,
+      formVariant: variant,
+    });
 
     const kassa = kassaMap[variant];
 

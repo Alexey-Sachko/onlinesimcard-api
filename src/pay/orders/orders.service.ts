@@ -9,6 +9,7 @@ import { Transaction } from 'src/transactions/transaction.entity';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { User } from 'src/users/user.entity';
 import { Repository } from 'typeorm';
+import { PaymentVariant } from '../input/payment-variant.enum';
 import { OrderStatus } from './order-status.enum';
 import { OrderEntity } from './order.entity';
 import { OrderType } from './order.gql-type';
@@ -22,13 +23,22 @@ export class OrdersService {
     private readonly _transactionsService: TransactionsService,
   ) {}
 
-  async createOrder(user: User, amount: number): Promise<OrderEntity> {
+  async createOrder({
+    amount,
+    user,
+    formVariant,
+  }: {
+    user: User;
+    amount: number;
+    formVariant: PaymentVariant;
+  }): Promise<OrderEntity> {
     const money = Money.fromDecimal(amount);
 
     const order = new OrderEntity();
     order.status = OrderStatus.WAIT_PAY;
     order.amount = money.amount;
     order.user = user;
+    order.formVariant = formVariant;
 
     await order.save();
     return order;

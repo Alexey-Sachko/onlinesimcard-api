@@ -3,6 +3,7 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from 'src/users/user.entity';
 import { OrderStatus } from './order-status.enum';
 import { DefaultEntity } from 'src/common/default-entity';
+import { PaymentVariant } from '../input/payment-variant.enum';
 
 @Entity()
 export class OrderEntity extends DefaultEntity {
@@ -23,6 +24,9 @@ export class OrderEntity extends DefaultEntity {
 
   @Column({ nullable: true })
   transactionId: string;
+
+  @Column()
+  formVariant: PaymentVariant;
 
   @ManyToOne(
     type => User,
