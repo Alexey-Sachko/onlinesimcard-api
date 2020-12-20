@@ -18,7 +18,7 @@ class YoomoneyClient implements Kassa {
   private _formUrl = 'https://yoomoney.ru/quickpay/confirm.xml';
   private _targetsText = 'Пополнение баланса Virtualnum';
 
-  getForm({ orderAmount, orderId }: GetFormOptions): KassaPayment {
+  getForm({ orderAmount, orderId, email }: GetFormOptions): KassaPayment {
     return {
       formUrl: this._formUrl,
       method: FormMethod.POST,
@@ -27,10 +27,11 @@ class YoomoneyClient implements Kassa {
         'quickpay-form': 'shop',
         targets: this._targetsText,
         paymentType: 'AC',
-        sum: orderAmount,
+        sum: orderAmount * 1.02, // Считаем комиссию
         label: orderId,
         formcomment: this._targetsText,
         'short-dest': this._targetsText,
+        comment: `orderId: ${orderId}; email: ${email}`,
         // successURL: 'dashboard'
       },
     };
