@@ -12,7 +12,7 @@ export class YoomoneyService {
     operation_id,
   }: YoomoneyNotificationDto) {
     await this._ordersService.completeOrder({
-      amount,
+      amount: +amount, // Каст к числу
       orderId,
       paymentId: operation_id,
     });

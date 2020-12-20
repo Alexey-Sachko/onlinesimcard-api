@@ -1,5 +1,10 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumberString,
+  IsString,
+} from 'class-validator';
 
 enum NotificationType {
   P2P = 'p2p-incoming',
@@ -16,14 +21,12 @@ export class YoomoneyNotificationDto {
   operation_id: string; // Идентификатор операции в истории счета получателя.
 
   @IsNotEmpty()
-  @Transform(value => +value)
-  @IsNumber({ allowNaN: false })
-  amount: number; // Сумма, которая зачислена на счет получателя.
+  @IsNumberString()
+  amount: string; // Сумма, которая зачислена на счет получателя.
 
   @IsNotEmpty()
-  @Transform(value => +value)
-  @IsNumber({ allowNaN: false })
-  withdraw_amount: number; // Сумма, которая списана со счета отправителя.
+  @IsNumberString()
+  withdraw_amount: string; // Сумма, которая списана со счета отправителя.
 
   @IsNotEmpty()
   @IsString()
