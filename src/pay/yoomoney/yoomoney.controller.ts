@@ -22,6 +22,11 @@ export class YoomoneyController {
   ) {
     const sign = yoomoneyClient.getNotificationSign(yoomoneyNotificationDto);
     if (sign !== yoomoneyNotificationDto.sha1_hash) {
+      console.log(
+        'wrong sign /pay/yoomoney/done body:',
+        sign,
+        yoomoneyNotificationDto,
+      );
       throw new BadRequestException('sha1_hash is not valid');
     }
 
