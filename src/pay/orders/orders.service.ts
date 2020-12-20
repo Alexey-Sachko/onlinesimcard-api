@@ -83,14 +83,16 @@ export class OrdersService {
     }
 
     const incomingMoney = Money.fromDecimal(amount);
-    const orderMoney = new Money(order.amount);
 
-    // Проверка суммы заказа
-    if (!incomingMoney.equal(orderMoney)) {
-      throw new BadRequestException(
-        "order.amount and payment.AMOUNT aren't equals",
-      );
-    }
+    // TODO: временный фикс
+    // const orderMoney = new Money(order.amount);
+
+    // // Проверка суммы заказа
+    // if (!incomingMoney.equal(orderMoney)) {
+    //   throw new BadRequestException(
+    //     "order.amount and payment.AMOUNT aren't equals",
+    //   );
+    // }
 
     const transaction = await this._transactionsService.pay({
       money: incomingMoney,
