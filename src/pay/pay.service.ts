@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/users/user.entity';
 import { freekassa } from './client/free-kassa.client';
+import { yoomoneyClient } from './client/yoomoney.client';
 // import { interkassa } from './client/interkassa.client';
 import { Kassa } from './common/kassa.interface';
 import { MakePaymentResType } from './gql-types/make-payment-res.type';
@@ -11,6 +12,7 @@ import { OrdersService } from './orders/orders.service';
 
 const kassaMap: Record<PaymentVariant, Kassa> = {
   [PaymentVariant.FREEKASSA]: freekassa,
+  [PaymentVariant.BANK_CARD]: yoomoneyClient,
   // [PaymentVariant.INTERKASSA]: interkassa,
 };
 @Injectable()
@@ -23,7 +25,11 @@ export class PayService {
   ): Promise<MakePaymentResType> {
     const { amount, variant } = makePaymentInput;
 
-    const order = await this._ordersService.createOrder(user, amount);
+    const order = await this._ordersService.createOrder({
+      user,
+      amount,
+      formVariant: variant,
+    });
 
     const kassa = kassaMap[variant];
 

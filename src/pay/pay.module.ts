@@ -9,6 +9,8 @@ import { OrderEntity } from './orders/order.entity';
 import { OrdersService } from './orders/orders.service';
 import { PayResolver } from './pay.resolver';
 import { PayService } from './pay.service';
+import { YoomoneyController } from './yoomoney/yoomoney.controller';
+import { YoomoneyService } from './yoomoney/yoomoney.service';
 
 @Module({
   imports: [
@@ -16,7 +18,13 @@ import { PayService } from './pay.service';
     UsersModule,
     TransactionsModule,
   ],
-  controllers: [FreekassaController],
-  providers: [PayResolver, PayService, OrdersService, FreekassaService],
+  controllers: [FreekassaController, YoomoneyController],
+  providers: [
+    PayResolver,
+    PayService,
+    OrdersService,
+    FreekassaService,
+    YoomoneyService,
+  ],
 })
 export class PayModule {}

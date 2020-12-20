@@ -1,22 +1,11 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { Money } from 'src/common/money';
-import { TransactionsService } from 'src/transactions/transactions.service';
-import { OrderStatus } from '../orders/order-status.enum';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service';
 import { PaymentDoneDto } from './dto/payment-done.dto';
 import { fkIpAddresses } from './fk-ip-adress';
 
 @Injectable()
 export class FreekassaService {
-  constructor(
-    private readonly _transactionsService: TransactionsService,
-    private readonly _ordersService: OrdersService,
-  ) {}
+  constructor(private readonly _ordersService: OrdersService) {}
 
   async paymentDone(
     { MERCHANT_ORDER_ID, AMOUNT, intid }: PaymentDoneDto,
@@ -26,34 +15,9 @@ export class FreekassaService {
       throw new ForbiddenException();
     }
 
-    const order = await this._ordersService.getOrder({
-      id: Number(MERCHANT_ORDER_ID),
-    });
-    // Проверка наличия заказа
-    if (!order) {
-      throw new NotFoundException(`not found order`);
-    }
-
-    if (order.status === OrderStatus.PAID) {
-      throw new BadRequestException('order is already paid');
-    }
-
-    const incomingMoney = Money.fromDecimal(AMOUNT);
-    const orderMoney = new Money(order.amount);
-
-    // Проверка суммы заказа
-    if (!incomingMoney.equal(orderMoney)) {
-      throw new BadRequestException(
-        "order.amount and payment.AMOUNT aren't equals",
-      );
-    }
-
-    const transaction = await this._transactionsService.pay({
-      money: incomingMoney,
-      userId: order.userId,
-    });
-
-    await this._ordersService.complete(order, transaction, {
+    await this._ordersService.completeOrder({
+      amount: AMOUNT,
+      orderId: MERCHANT_ORDER_ID,
       paymentId: String(intid),
     });
 
