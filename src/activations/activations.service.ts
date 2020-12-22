@@ -16,6 +16,7 @@ import { Money } from 'src/common/money';
 import { ActivationType } from './types/activation.type';
 import { BalanceService } from 'src/balance/balance.service';
 import { NoNumbersException } from 'src/common/smsActivateClient/exceptions/no-numbers.exception';
+import { GetActivationsInput } from './input/get-activations.input';
 
 @Injectable()
 export class ActivationsService {
@@ -37,7 +38,10 @@ export class ActivationsService {
   }
 
   async myCurrentActivations(user: User): Promise<ActivationType[]> {
-    const activations = await this._getUserCurrentActivations(user.id);
+    const activations = await this._getActivations({
+      userId: user.id,
+      isCurrent: true,
+    });
     return Promise.all(
       activations.map(async activation => {
         const price = await this._sercvicesService.getPriceById(
@@ -54,20 +58,64 @@ export class ActivationsService {
     );
   }
 
-  private async _getUserCurrentActivations(
-    userId: string,
-  ): Promise<Activation[]> {
+  async getUsersActivations(
+    options?: GetActivationsInput,
+  ): Promise<ActivationType[]> {
+    const activations = await this._getActivations(options);
+    return Promise.all(
+      activations.map(async activation => {
+        const price = await this._sercvicesService.getPriceById(
+          activation.priceId,
+        );
+
+        return {
+          ...activation,
+          cost: new Money(activation.cost).toDecimal(),
+          serviceCode: price?.service?.code,
+          countryCode: price?.countryCode,
+        };
+      }),
+    );
+  }
+
+  private async _getActivations(options?: GetActivationsInput) {
+    const where = {
+      userId: options?.userId || undefined,
+      status: options?.isCurrent
+        ? Not(In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]))
+        : undefined,
+    };
+
+    Object.keys(where).forEach(key => {
+      if (where[key] === undefined) {
+        delete where[key];
+      }
+    });
+
     const activations = await this._activationRepository.find({
-      where: {
-        userId,
-        status: Not(
-          In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]),
-        ),
+      where,
+      order: {
+        createdAt: 'DESC',
       },
-      relations: ['activationCodes'],
+      relations: ['activationCodes'], // TODO сделать в виде queryField
     });
     return activations;
   }
+
+  // private async _getUserCurrentActivations(
+  //   userId: string,
+  // ): Promise<Activation[]> {
+  //   const activations = await this._activationRepository.find({
+  //     where: {
+  //       userId,
+  //       status: Not(
+  //         In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]),
+  //       ),
+  //     },
+  //     relations: ['activationCodes'],
+  //   });
+  //   return activations;
+  // }
 
   async getFreezedUserMoney(userId: string): Promise<Money> {
     const activations = await this._activationRepository.find({
