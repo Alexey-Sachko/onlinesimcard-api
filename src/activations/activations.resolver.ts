@@ -8,6 +8,7 @@ import { GetGqlUser } from 'src/users/get-user.decorator';
 import { ErrorType } from 'src/common/errors/error.type';
 import { ActivationType } from './types/activation.type';
 import { Permissions } from 'src/users/permissions.enum';
+import { GetActivationsInput } from './input/get-activations.input';
 
 @Resolver('Activations')
 export class ActivationsResolver {
@@ -20,6 +21,15 @@ export class ActivationsResolver {
     user: User,
   ): Promise<ActivationType[]> {
     return this._acivationsService.myCurrentActivations(user);
+  }
+
+  @UseGuards(GqlAuthGuard(Permissions.ReadAdminPage))
+  @Query(returns => [ActivationType])
+  async activations(
+    @Args('getActivationsInput', { nullable: true })
+    getActivationsInput?: GetActivationsInput,
+  ): Promise<ActivationType[]> {
+    return this._acivationsService.getUsersActivations(getActivationsInput);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteStubs))
