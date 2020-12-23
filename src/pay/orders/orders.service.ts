@@ -116,7 +116,6 @@ export class OrdersService {
   }: {
     orderId: number;
     paymentId: string;
-    amount: number;
   }) {
     const order = await this.getOrder({ id: orderId });
 
