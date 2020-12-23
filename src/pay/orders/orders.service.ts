@@ -52,11 +52,16 @@ export class OrdersService {
   async complete(
     order: OrderEntity,
     transaction: Transaction,
-    { paymentId }: { paymentId: string },
+    { paymentId, incomingMoney }: { paymentId: string; incomingMoney: Money },
   ): Promise<void> {
     await this._ordersRepository.update(
       { id: order.id },
-      { status: OrderStatus.PAID, transactionId: transaction.id, paymentId },
+      {
+        status: OrderStatus.PAID,
+        transactionId: transaction.id,
+        paymentId,
+        amount: incomingMoney.amount,
+      },
     );
   }
 
@@ -101,6 +106,7 @@ export class OrdersService {
 
     await this.complete(order, transaction, {
       paymentId: String(paymentId),
+      incomingMoney,
     });
   }
 
@@ -110,6 +116,7 @@ export class OrdersService {
   }: {
     orderId: number;
     paymentId: string;
+    amount: number;
   }) {
     const order = await this.getOrder({ id: orderId });
 
@@ -120,7 +127,8 @@ export class OrdersService {
       userId: order.userId,
     });
 
-    this.complete(order, transaction, { paymentId });
+    // TODO получать money из параметров
+    this.complete(order, transaction, { paymentId, incomingMoney: money });
   }
 
   async getUserOrders(userId: string): Promise<OrderType[]> {

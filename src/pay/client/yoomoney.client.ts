@@ -27,7 +27,7 @@ class YoomoneyClient implements Kassa {
         'quickpay-form': 'shop',
         targets: this._targetsText,
         paymentType: 'AC',
-        sum: orderAmount * 1.02, // Считаем комиссию
+        sum: orderAmount * 1.02040819, // Считаем комиссию
         label: orderId,
         formcomment: this._targetsText,
         'short-dest': this._targetsText,
