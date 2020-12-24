@@ -14,10 +14,10 @@ export class Transaction extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'double precision' })
+  @Column({ type: 'integer' })
   amount: number;
 
-  @Column({ type: 'double precision' })
+  @Column({ type: 'integer' })
   balanceBefore: number;
 
   @Column({ type: 'varchar' })

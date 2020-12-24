@@ -15,6 +15,14 @@ export class Money {
     return new Money(amount * DEFAULT_RATIO);
   }
 
+  toRoundMoreAmount() {
+    return Math.ceil(this._amount);
+  }
+
+  toRoundLessAmount() {
+    return Math.floor(this._amount);
+  }
+
   toDecimal() {
     return this._amount / DEFAULT_RATIO;
   }

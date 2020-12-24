@@ -126,7 +126,12 @@ export class TransactionsService {
     const userBalance = await this._balanceService.getUserBalance(userId);
 
     const { money, type } = createTransactionDto;
-    const totalBalance = userBalance.add(money);
+
+    const transactionMoney = new Money(money.toRoundLessAmount());
+
+    const totalBalance = new Money(
+      userBalance.add(transactionMoney).toRoundLessAmount(),
+    );
 
     if (totalBalance.less(Money.ZERO())) {
       return new NoMoneyException();
@@ -142,11 +147,77 @@ export class TransactionsService {
 
     const transaction = new Transaction();
     transaction.userId = userId;
-    transaction.amount = money.amount;
+    transaction.amount = transactionMoney.amount;
     transaction.balanceBefore = currentBalance.amount;
     transaction.type = type;
 
     await transaction.save();
     return transaction;
+  }
+
+  async test() {
+    const allUserIds = await this._transactionRepository.query(
+      'SELECT DISTINCT "userId" from "transaction"',
+    );
+
+    const result: {
+      userId: string;
+      transactions: Transaction[];
+    }[] = await Promise.all(
+      allUserIds.map(async ({ userId }) => {
+        const userTransactions = await this._transactionRepository.find({
+          where: { userId },
+          order: {
+            createdAt: 'ASC',
+          },
+        });
+        return { userId, transactions: userTransactions };
+      }),
+    );
+
+    const filtered = result.filter(({ transactions }) =>
+      transactions.some(({ amount }) => !Number.isInteger(amount)),
+    );
+
+    const calcBalance = (transactions: Transaction[]) => {
+      return transactions.reduce((acc, { amount }) => acc + amount, 0);
+    };
+
+    return filtered.map(({ transactions, userId }) => {
+      const oldBalance = calcBalance(transactions);
+
+      const lastTransaction = transactions[transactions.length - 1];
+
+      const nextTransactions = [];
+
+      transactions.forEach((old, idx) => {
+        const add = (balanceBefore: number) => {
+          const newAmount = new Money(old.amount).toRoundMoreAmount();
+          nextTransactions.push({
+            ...old,
+            amount: newAmount,
+            balanceBefore,
+          });
+        };
+
+        const prev = nextTransactions[idx - 1];
+        if (prev) {
+          const nextBalanceBefore = prev.amount + prev.balanceBefore;
+          add(nextBalanceBefore);
+        } else {
+          add(0);
+        }
+      });
+
+      return {
+        userId,
+        oldBalance,
+        nextBalance: calcBalance(nextTransactions),
+        transactionsBalance:
+          lastTransaction.balanceBefore + lastTransaction.amount,
+        transactions,
+        nextTransactions,
+      };
+    });
   }
 }

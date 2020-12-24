@@ -229,7 +229,7 @@ export class ActivationsService {
     activation.price = priceFound;
     activation.phoneNum = apiOper.number;
     activation.sourceActivationId = apiOper.operId;
-    activation.cost = priceMoney.amount;
+    activation.cost = priceMoney.toRoundMoreAmount();
     activation.user = user;
     activation.expiresAt = expiresAt;
     // activation.transaction = transaction;

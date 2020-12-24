@@ -36,7 +36,7 @@ export class OrdersService {
 
     const order = new OrderEntity();
     order.status = OrderStatus.WAIT_PAY;
-    order.amount = money.amount;
+    order.amount = money.toRoundMoreAmount();
     order.user = user;
     order.formVariant = formVariant;
 
@@ -60,7 +60,7 @@ export class OrdersService {
         status: OrderStatus.PAID,
         transactionId: transaction.id,
         paymentId,
-        amount: incomingMoney.amount,
+        amount: incomingMoney.toRoundLessAmount(),
       },
     );
   }
