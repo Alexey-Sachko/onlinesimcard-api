@@ -280,13 +280,13 @@ export class ServicesService {
     });
 
     if (priceFound) {
-      priceFound.amount = money.amount;
+      priceFound.amount = money.toRoundMoreAmount();
       await priceFound.save();
       return null;
     }
 
     const price = new PriceEntity();
-    price.amount = money.amount;
+    price.amount = money.toRoundMoreAmount();
     price.service = service;
     price.countryCode = countryCode;
 
