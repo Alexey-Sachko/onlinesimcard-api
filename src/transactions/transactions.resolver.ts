@@ -11,6 +11,7 @@ import { TransactionGqlType } from './types/transaction.type';
 export class TransactionsResolver {
   constructor(private readonly _transactionsService: TransactionsService) {}
 
+  @UseGuards(GqlAuthGuard(Permissions.ReadAdminPage))
   @Query(returns => [TransactionGqlType])
   transactions() {
     return this._transactionsService.getTransactions();

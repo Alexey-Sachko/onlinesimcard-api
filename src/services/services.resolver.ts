@@ -21,6 +21,7 @@ import { ServicesApiQueryInput } from './input/services-api-query.input';
 export class ServicesResolver {
   constructor(private readonly _servicesService: ServicesService) {}
 
+  @UseGuards(GqlAuthGuard())
   @Query(returns => [CountryType])
   async countries(
     @Args('countriesQueryInput', { nullable: true })
@@ -29,11 +30,13 @@ export class ServicesResolver {
     return this._servicesService.getCountries(countriesQueryInput);
   }
 
+  @UseGuards(GqlAuthGuard())
   @Query(returns => [ServiceType])
   async services(@Args('countryCode') countryCode: string) {
     return this._servicesService.getDisplayServices(countryCode);
   }
 
+  @UseGuards(GqlAuthGuard())
   @Query(returns => [PriceType])
   async prices() {
     return this._servicesService.getDisplayPrices();
@@ -47,6 +50,7 @@ export class ServicesResolver {
     }));
   }
 
+  @UseGuards(GqlAuthGuard())
   @Query(returns => [ServiceFromApi])
   async apiServices(
     @Args('servicesApiQueryInput') servicesApiQueryInput: ServicesApiQueryInput,
@@ -72,11 +76,13 @@ export class ServicesResolver {
     );
   }
 
+  @UseGuards(GqlAuthGuard(Permissions.WriteServices))
   @Mutation(returns => [ErrorType], { nullable: true })
   async deleteService(@Args('code') code: string) {
     return this._servicesService.deleteService(code);
   }
 
+  @UseGuards(GqlAuthGuard(Permissions.WriteServices))
   @Mutation(returns => [ErrorType], { nullable: true })
   async restoreService(@Args('code') code: string) {
     return this._servicesService.restoreService(code);

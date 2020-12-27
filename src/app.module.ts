@@ -99,7 +99,6 @@ dotenv.config();
     }),
     TransactionsModule,
     ServicesModule,
-    FreeModule,
     ArticlesModule,
     ActivationsModule,
     BalanceModule,
