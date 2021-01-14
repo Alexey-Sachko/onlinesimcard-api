@@ -7,6 +7,7 @@ import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient
 import { ServicesResolver } from './services.resolver';
 import { PriceEntity } from './price.entity';
 import { UsersModule } from 'src/users/users.module';
+import Axios from 'axios';
 
 @Module({
   imports: [
@@ -18,6 +19,17 @@ import { UsersModule } from 'src/users/users.module';
   ],
   controllers: [],
   exports: [ServicesService],
-  providers: [ServicesService, SmsActivateClient, ServicesResolver],
+  providers: [
+    ServicesService,
+    {
+      provide: SmsActivateClient,
+      useValue: new SmsActivateClient(
+        Axios.create({
+          baseURL: process.env.SMS_ACTIVATE_API_URL,
+        }),
+      ),
+    },
+    ServicesResolver,
+  ],
 })
 export class ServicesModule {}

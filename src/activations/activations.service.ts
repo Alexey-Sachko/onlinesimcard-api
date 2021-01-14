@@ -3,19 +3,19 @@ import moment from 'moment';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, In } from 'typeorm';
 import { Activation } from './entity/activation.entity';
-import { User } from 'src/users/user.entity';
+import { User } from '../users/user.entity';
 import { ActivationStatus } from './types/activation-status.enum';
 import { CreateActivationInput } from './input/create-activation.input';
-import { ServicesService } from 'src/services/services.service';
-import { createError } from 'src/common/errors/create-error';
-import { ErrorType } from 'src/common/errors/error.type';
-import { SmsActivateClient } from 'src/common/smsActivateClient/smsActivateClient';
+import { ServicesService } from '../services/services.service';
+import { createError } from '../common/errors/create-error';
+import { ErrorType } from '../common/errors/error.type';
+import { SmsActivateClient } from '../common/smsActivateClient/smsActivateClient';
 import { CheckingService } from './checking/checking.service';
-import { TransactionsService } from 'src/transactions/transactions.service';
-import { Money } from 'src/common/money';
+import { TransactionsService } from '../transactions/transactions.service';
+import { Money } from '../common/money';
 import { ActivationType } from './types/activation.type';
-import { BalanceService } from 'src/balance/balance.service';
-import { NoNumbersException } from 'src/common/smsActivateClient/exceptions/no-numbers.exception';
+import { BalanceService } from '../balance/balance.service';
+import { NoNumbersException } from '../common/smsActivateClient/exceptions/no-numbers.exception';
 import { GetActivationsInput } from './input/get-activations.input';
 
 @Injectable()
