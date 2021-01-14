@@ -1,7 +1,7 @@
-import Axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { AxiosInstance, AxiosResponse } from 'axios';
 import { from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { config } from 'dotenv';
 import { createEvent, restore } from 'effector';
 import moment from 'moment';
@@ -26,12 +26,10 @@ const cacheGetPricesAllCountries = restore<{
 
 @Injectable()
 export class SmsActivateClient {
-  private Api: AxiosInstance;
+  // private Api: AxiosInstance;
 
-  constructor() {
-    this.Api = Axios.create({
-      baseURL: process.env.SMS_ACTIVATE_API_URL,
-    });
+  constructor(private readonly Api: AxiosInstance) {
+    // this.Api =
     // TODO logger
   }
 
@@ -51,7 +49,7 @@ export class SmsActivateClient {
   }
 
   private parseTextData(data: string) {
-    const match = /([^:]*)(:(.*))?/.exec(data);
+    const match = /([^:]*)(:(.*))?/s.exec(data);
     const name = match[1];
     const value = match[3];
     return { name, value };
@@ -189,30 +187,6 @@ export class SmsActivateClient {
     console.log('end getStatus', this.countRequests);
 
     return { status, code: value };
-  }
-
-  getStatusObs(operId: string) {
-    return from(
-      this.callApi<string>('getStatus', { id: operId }),
-    ).pipe(
-      map(res => ({ ...this.parseTextData(res.data), res })),
-      tap(({ name, res }) => {
-        if (
-          !Object.values(SmsActivationStatus).includes(
-            name as SmsActivationStatus,
-          )
-        ) {
-          throw new Error(`Ошибка sms-activate: '${res.data}'`);
-        }
-      }),
-      map(({ name, value }) => {
-        if (name === SmsActivationStatus.STATUS_WAIT_RETRY) {
-          return { name, lastCode: value };
-        }
-
-        return { name, code: value };
-      }),
-    );
   }
 
   async cancelActivation(operId: string) {

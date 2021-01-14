@@ -10,6 +10,7 @@ import { ActivationCode } from './entity/activation-code.entity';
 import { CheckingService } from './checking/checking.service';
 import { TransactionsModule } from 'src/transactions/transactions.module';
 import { BalanceModule } from 'src/balance/balance.module';
+import Axios from 'axios';
 
 @Module({
   imports: [
@@ -22,7 +23,14 @@ import { BalanceModule } from 'src/balance/balance.module';
   providers: [
     ActivationsResolver,
     ActivationsService,
-    SmsActivateClient,
+    {
+      provide: SmsActivateClient,
+      useValue: new SmsActivateClient(
+        Axios.create({
+          baseURL: process.env.SMS_ACTIVATE_API_URL,
+        }),
+      ),
+    },
     CheckingService,
   ],
   exports: [ActivationsService],
