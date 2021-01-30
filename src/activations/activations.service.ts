@@ -17,6 +17,7 @@ import { ActivationType } from './types/activation.type';
 import { BalanceService } from '../balance/balance.service';
 import { NoNumbersException } from '../common/smsActivateClient/exceptions/no-numbers.exception';
 import { GetActivationsInput } from './input/get-activations.input';
+import { PaginationGqlInput } from 'src/common/pagination.gql-type';
 
 @Injectable()
 export class ActivationsService {
@@ -37,31 +38,11 @@ export class ActivationsService {
     this._checkingService.startChecker();
   }
 
-  async myCurrentActivations(user: User): Promise<ActivationType[]> {
-    const activations = await this._getActivations({
-      userId: user.id,
-      isCurrent: true,
-    });
-    return Promise.all(
-      activations.map(async activation => {
-        const price = await this._sercvicesService.getPriceById(
-          activation.priceId,
-        );
-
-        return {
-          ...activation,
-          cost: new Money(activation.cost).toDecimal(),
-          serviceCode: price?.service?.code,
-          countryCode: price?.countryCode,
-        };
-      }),
-    );
-  }
-
   async getUsersActivations(
+    pagination: PaginationGqlInput,
     options?: GetActivationsInput,
   ): Promise<ActivationType[]> {
-    const activations = await this._getActivations(options);
+    const activations = await this._getActivations(pagination, options);
     return Promise.all(
       activations.map(async activation => {
         const price = await this._sercvicesService.getPriceById(
@@ -78,7 +59,23 @@ export class ActivationsService {
     );
   }
 
-  private async _getActivations(options?: GetActivationsInput) {
+  async getActivationsCount(options?: GetActivationsInput): Promise<number> {
+    return this._activationRepository.count({
+      where: this._buildActivationsWhere(options),
+    });
+  }
+
+  private _validateActivationsPagination(pagination: PaginationGqlInput) {
+    const maxLimit = 50;
+    const minLimit = 0;
+    if (pagination.limit > maxLimit) {
+      throw new Error(`Max limit is: ${maxLimit}`);
+    } else if (pagination.limit < minLimit) {
+      throw new Error(`Min limit is: ${minLimit}`);
+    }
+  }
+
+  private _buildActivationsWhere(options?: GetActivationsInput) {
     const where = {
       userId: options?.userId || undefined,
       status: options?.isCurrent
@@ -92,30 +89,25 @@ export class ActivationsService {
       }
     });
 
+    return where;
+  }
+
+  private async _getActivations(
+    pagination: PaginationGqlInput,
+    options?: GetActivationsInput,
+  ) {
+    this._validateActivationsPagination(pagination);
     const activations = await this._activationRepository.find({
-      where,
+      where: this._buildActivationsWhere(options),
       order: {
         createdAt: 'DESC',
       },
       relations: ['activationCodes'], // TODO сделать в виде queryField
+      take: pagination.limit,
+      skip: pagination.offset,
     });
     return activations;
   }
-
-  // private async _getUserCurrentActivations(
-  //   userId: string,
-  // ): Promise<Activation[]> {
-  //   const activations = await this._activationRepository.find({
-  //     where: {
-  //       userId,
-  //       status: Not(
-  //         In([ActivationStatus.FINISHED, ActivationStatus.CANCELLED]),
-  //       ),
-  //     },
-  //     relations: ['activationCodes'],
-  //   });
-  //   return activations;
-  // }
 
   async getFreezedUserMoney(userId: string): Promise<Money> {
     const activations = await this._activationRepository.find({

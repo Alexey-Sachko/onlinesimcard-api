@@ -9,6 +9,7 @@ import { ErrorType } from 'src/common/errors/error.type';
 import { ActivationType } from './types/activation.type';
 import { Permissions } from 'src/users/permissions.enum';
 import { GetActivationsInput } from './input/get-activations.input';
+import { PaginationGqlInput } from 'src/common/pagination.gql-type';
 
 @Resolver('Activations')
 export class ActivationsResolver {
@@ -16,20 +17,50 @@ export class ActivationsResolver {
 
   @UseGuards(GqlAuthGuard())
   @Query(returns => [ActivationType])
-  async myCurrentActivations(
+  async myActivations(
     @GetGqlUser()
     user: User,
+
+    @Args('pagination')
+    pagination: PaginationGqlInput,
+
+    @Args('isCurrent', { nullable: true })
+    isCurrent?: boolean,
   ): Promise<ActivationType[]> {
-    return this._acivationsService.myCurrentActivations(user);
+    return this._acivationsService.getUsersActivations(pagination, {
+      userId: user.id,
+      isCurrent,
+    });
+  }
+
+  @UseGuards(GqlAuthGuard())
+  @Query(returns => Number)
+  async myActivationsCount(
+    @GetGqlUser()
+    user: User,
+
+    @Args('isCurrent', { nullable: true })
+    isCurrent?: boolean,
+  ): Promise<number> {
+    return this._acivationsService.getActivationsCount({
+      isCurrent,
+      userId: user.id,
+    });
   }
 
   @UseGuards(GqlAuthGuard(Permissions.ReadAdminPage))
   @Query(returns => [ActivationType])
   async activations(
+    @Args('pagination')
+    pagination: PaginationGqlInput,
+
     @Args('getActivationsInput', { nullable: true })
     getActivationsInput?: GetActivationsInput,
   ): Promise<ActivationType[]> {
-    return this._acivationsService.getUsersActivations(getActivationsInput);
+    return this._acivationsService.getUsersActivations(
+      pagination,
+      getActivationsInput,
+    );
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteStubs))
