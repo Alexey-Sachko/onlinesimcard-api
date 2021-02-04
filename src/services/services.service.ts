@@ -84,7 +84,16 @@ export class ServicesService {
           }),
         };
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort((a, b) => {
+        if (b.code === 'ot') {
+          return -1;
+        } else if (a.code === 'ot') {
+          return 1;
+        }
+
+        return 0;
+      });
     return filtered;
   }
 
