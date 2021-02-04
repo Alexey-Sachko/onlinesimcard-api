@@ -7,8 +7,8 @@ services:
       POSTGRES_USER: alexey
       POSTGRES_PASSWORD: example
       POSTGRES_DB: onlinesimcard
-    # volumes:
-    # - onlinesimcard:/var/lib/postgresql/data
+    volumes:
+      - './init-db/:/docker-entrypoint-initdb.d/'
     ports:
       - '5432:5432'
 
