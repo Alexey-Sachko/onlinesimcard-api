@@ -137,7 +137,8 @@ export class SmsActivateClient {
     const res = await this.callApi<GetPricesRO>('getPrices');
 
     if (typeof res.data === 'string') {
-      throw new Error(`Ошибка sms-activate: ${res.data}`);
+      console.error(`Ошибка sms-activate: ${res.data}`);
+      return cache.data;
     }
 
     setCacheGetPricesAllCountries({ time: new Date(), data: res.data });
