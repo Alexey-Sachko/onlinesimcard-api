@@ -305,10 +305,13 @@ export class ServicesService {
 
   async getCountries(filter: CountriesQueryInput = {}): Promise<CountryType[]> {
     const entries = Object.entries(countriesDictionary);
-    const countries: CountryType[] = entries.map(([code, name]) => ({
-      code,
-      name,
-    }));
+    const countries: CountryType[] = entries.map(
+      ([code, { alpha2Code, name }]) => ({
+        code,
+        name,
+        alpha2Code,
+      }),
+    );
 
     if (filter.notEmpty) {
       const prices: { countryCode: string }[] = await this._priceRepository

@@ -5,6 +5,9 @@ export class CountryType {
   @Field()
   code: string;
 
+  @Field()
+  alpha2Code: string;
+
   @Field({ nullable: true })
   name: string;
 }
