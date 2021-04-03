@@ -87,9 +87,12 @@ export class UsersService {
       this.logger.verbose(`Role: "${ROOT_ADMIN_ROLE}" does not exist yet`);
       role = new Role();
       role.name = ROOT_ADMIN_ROLE;
+      role.permissions = Object.values(Permissions);
+      await role.save();
     } else {
       this.logger.verbose(`Role: "${ROOT_ADMIN_ROLE}" already exists`);
     }
+
     await this.rolesRepository.update(role.id, {
       permissions: Object.values(Permissions),
     });
