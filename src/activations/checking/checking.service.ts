@@ -84,7 +84,7 @@ export class CheckingService {
           apiActivation.code,
           activation,
         );
-        activation.status = ActivationStatus.SMS_RECIEVED;
+        activation.status = ActivationStatus.WAIT_AGAIN;
 
         if (!activation.transactionId) {
           const transaction = await this._transactionsService.buy({
@@ -98,14 +98,26 @@ export class CheckingService {
         }
 
         await activation.save();
+
+        await this._smsActivateClient.retryActivation(
+          activation.sourceActivationId,
+        );
+
         break;
       }
       case SmsActivationStatus.STATUS_WAIT_CODE: {
-        activation.status = ActivationStatus.WAIT_CODE;
-        await activation.save();
+        if (
+          activation.status !== ActivationStatus.WAIT_AGAIN &&
+          activation.status !== ActivationStatus.WAIT_CODE
+        ) {
+          console.log('WAIT_CODE');
+
+          activation.status = ActivationStatus.WAIT_CODE;
+          await activation.save();
+        }
         break;
       }
-      case SmsActivationStatus.STATUS_WAIT_RETRY: {
+      case SmsActivationStatus.ACCESS_RETRY_GET: {
         // Синхронизируем ранее полученный код
         await this._createIfNotExistsActivationCode(
           apiActivation.lastCode,
@@ -113,6 +125,7 @@ export class CheckingService {
         );
         activation.status = ActivationStatus.WAIT_AGAIN;
         await activation.save();
+        console.log('status WAIT_RETRY');
         break;
       }
       case SmsActivationStatus.WRONG_ACTIVATION_ID: {

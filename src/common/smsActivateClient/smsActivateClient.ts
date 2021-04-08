@@ -168,7 +168,7 @@ export class SmsActivateClient {
 
   async getStatus(operId: string) {
     this.countRequests++;
-    console.log('start getStatus', this.countRequests);
+    // console.log('start getStatus', this.countRequests);
 
     const res = await this.callApi<string>('getStatus', { id: operId });
     const { name: status, value = '' } = this.parseTextData(res.data);
@@ -181,11 +181,11 @@ export class SmsActivateClient {
       throw new Error(`Ошибка sms-activate: '${res.data}'`);
     }
 
-    if (status === SmsActivationStatus.STATUS_WAIT_RETRY) {
+    if (status === SmsActivationStatus.ACCESS_RETRY_GET) {
       return { status, lastCode: value };
     }
 
-    console.log('end getStatus', this.countRequests);
+    // console.log('end getStatus', this.countRequests);
 
     return { status, code: value };
   }
@@ -210,6 +210,19 @@ export class SmsActivateClient {
 
     const { name: status, value = '' } = this.parseTextData(res.data);
     if (status !== SmsActivationStatus.ACCESS_ACTIVATION) {
+      throw new Error(`Ошибка sms-activate: '${res.data}'`);
+    }
+    return true;
+  }
+
+  async retryActivation(operId: string) {
+    const res = await this.callApi<string>('setStatus', {
+      id: operId,
+      status: 3,
+    });
+
+    const { name: status, value = '' } = this.parseTextData(res.data);
+    if (status !== SmsActivationStatus.ACCESS_RETRY_GET) {
       throw new Error(`Ошибка sms-activate: '${res.data}'`);
     }
     return true;
