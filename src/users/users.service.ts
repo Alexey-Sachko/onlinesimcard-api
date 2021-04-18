@@ -282,7 +282,7 @@ export class UsersService {
     return null;
   }
 
-  async verifyUser(tokenString: string): Promise<ErrorType | null> {
+  async verifyUser(tokenString: string): Promise<ErrorType | User> {
     const token = await this.verifyTokensRepository.findOne(
       {
         token: tokenString,
@@ -305,7 +305,7 @@ export class UsersService {
       throw new InternalServerErrorException();
     }
 
-    return null;
+    return token.user;
   }
 
   async validatePassword(authCredentialsDto: AuthCredentialsDto) {

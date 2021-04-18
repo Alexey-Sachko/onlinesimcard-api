@@ -59,8 +59,15 @@ export class UserResolver {
   @Mutation(returns => ErrorType, { nullable: true })
   async verifyUser(
     @Args('verifyToken') verifyToken: string,
+    @Context() context: MyGqlContext,
   ): Promise<ErrorType | null> {
-    return this._usersService.verifyUser(verifyToken);
+    const result = await this._usersService.verifyUser(verifyToken);
+    if (result instanceof ErrorType) {
+      return result;
+    }
+
+    const user = result;
+    await this._authService.setUserTokens(user, context.res);
   }
 
   @UseGuards(GqlAuthGuard(Permissions.WriteUsers))

@@ -49,22 +49,7 @@ export class AuthResolver {
     @Args('authCredentialsDto')
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<ErrorType[] | null> {
-    const validationErrors = await validate(
-      authCredentialsDto,
-      AuthCredentialsDto,
-    );
-    if (validationErrors) {
-      return validationErrors;
-    }
-
-    const data = await this._authService.login(authCredentialsDto);
-
-    if (data instanceof Array) {
-      return data;
-    }
-
-    setTokenCookie(context.res, data);
-    return null;
+    return this._authService.login(authCredentialsDto, context.res);
   }
 
   @Mutation(returns => Boolean)

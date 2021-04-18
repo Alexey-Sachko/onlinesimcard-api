@@ -20,6 +20,7 @@ import { createError } from '../common/errors/create-error';
 import { TokensDto } from './dto/tokens.dto';
 import { RefreshToken } from './refresh-token.entity';
 import { setTokenCookie } from './set-token-cookie';
+import { validate } from 'src/common/validate';
 
 @Injectable()
 export class AuthService {
@@ -98,7 +99,16 @@ export class AuthService {
 
   async login(
     authCredentialsDto: AuthCredentialsDto,
-  ): Promise<ErrorType[] | TokensDto> {
+    res: Response,
+  ): Promise<ErrorType[]> {
+    const validationErrors = await validate(
+      authCredentialsDto,
+      AuthCredentialsDto,
+    );
+    if (validationErrors) {
+      return validationErrors;
+    }
+
     const user = await this.usersService.validatePassword(authCredentialsDto);
     if (!user) {
       return [createError('email', 'Неправильные логин или пароль')];
@@ -108,8 +118,13 @@ export class AuthService {
       return [createError('email', 'Подтвердите учетную запись')];
     }
 
+    await this.setUserTokens(user, res);
+    return null;
+  }
+
+  async setUserTokens(user: User, res: Response) {
     const token = await this.createTokensByUser(user);
-    return token;
+    setTokenCookie(res, token);
   }
 
   async logout(userId: string): Promise<void> {
