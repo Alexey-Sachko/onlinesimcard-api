@@ -74,7 +74,7 @@ export class VkAuthService {
     const vkProfileRes = await VkApi.get(`/method/users.get`, {
       params: {
         access_token: VK_SERVICE_KEY,
-        v: '5.52',
+        v: '5.81',
         user_id,
       },
     });
